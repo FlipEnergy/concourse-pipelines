@@ -1,0 +1,50 @@
+---
+# Repo to pull for building image
+resources:
+  - name: personal-website-repo
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/personal-website.git
+      branch: master
+
+  # Where we will push the image to
+  - name: docker-hub-repo
+    type: registry-image
+    icon: docker
+    source:
+      repository: flipenergy/flipenergy
+      username: ((username))
+      password: ((password))
+      tag: latest
+
+jobs:
+  - name: build-and-push-latest-image
+    public: false
+    plan:
+      - get: personal-website-repo
+        trigger: true
+
+      - task: build-image
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: vito/oci-build-task
+
+          inputs:
+            - name: personal-website-repo
+
+          outputs:
+            - name: image
+
+          params:
+            CONTEXT: personal-website-repo
+          run:
+            path: build
+
+      - put: docker-hub-repo
+        params:
+          image: image/image.tar
