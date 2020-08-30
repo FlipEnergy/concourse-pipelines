@@ -1,6 +1,7 @@
 ---
-# Repo to pull for building image
+
 resources:
+  # Repo to pull for building image
   - name: personal-website-repo
     type: git
     icon: github
@@ -18,6 +19,7 @@ resources:
       password: ((password))
       tag: latest
 
+## Latest image jobs
 jobs:
   - name: build-and-push-latest-image
     public: false
@@ -48,3 +50,38 @@ jobs:
       - put: docker-hub-repo
         params:
           image: image/image.tar
+
+## Release image job
+  - name: build-and-push-release-image
+    public: false
+    plan:
+      - get: personal-website-repo
+        trigger: true
+        params:
+          paths:
+            - version
+
+      - task: build-image
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: vito/oci-build-task
+
+          inputs:
+            - name: personal-website-repo
+
+          outputs:
+            - name: image
+
+          params:
+            CONTEXT: personal-website-repo
+          run:
+            path: build
+
+      - put: docker-hub-repo
+        params:
+          image: image/image.tar
+          additional_tags: personal-website-repo/version
