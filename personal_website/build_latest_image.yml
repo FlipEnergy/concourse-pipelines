@@ -26,6 +26,9 @@ jobs:
     plan:
       - get: personal-website-repo
         trigger: true
+        params:
+          ignore_paths:
+            - version
 
       - task: build-image
         privileged: true
