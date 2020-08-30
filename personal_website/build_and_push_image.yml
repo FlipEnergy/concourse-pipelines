@@ -6,8 +6,8 @@ resource_type:
     icon: docker
     source:
       repository: flipenergy/flipenergy
-      username: ((username))
-      password: ((password))
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
 
 resources:
   # Repo to pull for building image

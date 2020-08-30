@@ -1,0 +1,49 @@
+---
+
+resources:
+  - name: helm-charts-repo
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/helm-charts-repo.git
+      branch: master
+      username: ((github_username))
+      password: ((github_password))
+
+jobs:
+  - name: helm-index-and-push
+    public: false
+    plan:
+      - get: helm-charts-repo
+        trigger: true
+        params:
+          ignore_paths:
+            - docs/index.yaml
+
+      - task: helm-index
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: alpine/helm
+
+          inputs:
+            - name: helm-charts-repo
+
+          outputs:
+            - name: helm-charts-repo
+
+          run:
+            path: helm
+            args:
+              - repo
+              - index
+              - docs
+              - --url
+              - https://flipenergy.github.io/helm-charts-repo/
+            dir: helm-charts-repo
+
+      - put: helm-charts-repo
+        params:
+          repository: helm-charts-repo
