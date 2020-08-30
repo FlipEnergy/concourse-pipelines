@@ -1,7 +1,7 @@
 
 set-all-pipelines:
-	make login
 	make personal-website-pipelines
+	make helm-charts-repo-pipelines
 
 login:
 	fly -t homelab login -c http://concourse.tgp

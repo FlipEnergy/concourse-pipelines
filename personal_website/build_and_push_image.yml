@@ -1,14 +1,5 @@
 ---
 
-resource_type:
-  - name: docker-hub-repo
-    type: registry-image
-    icon: docker
-    source:
-      repository: flipenergy/flipenergy
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
-
 resources:
   # Repo to pull for building image
   - name: personal-website-repo
@@ -20,13 +11,21 @@ resources:
 
   # Where we will push the image to
   - name: docker-hub-repo-latest
-    type: docker-hub-repo
+    type: registry-image
+    icon: docker
     source:
+      repository: flipenergy/flipenergy
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
       tag: latest
 
   - name: docker-hub-repo-stable
-    type: docker-hub-repo
+    type: registry-image
+    icon: docker
     source:
+      repository: flipenergy/flipenergy
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
       tag: stable
 
 ## Latest image jobs
