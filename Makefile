@@ -8,5 +8,5 @@ login:
 
 personal-website-pipelines:
 	sops -d personal_website/secrets.yml > personal_website/secrets.dec.yml
-	-fly -t homelab set-pipeline -n -p personal-website -c personal_website/build_latest_image.yml -l personal_website/secrets.dec.yml
+	-fly -t homelab set-pipeline -n -p personal-website -c personal_website/build_and_push_image.yml -l personal_website/secrets.dec.yml
 	rm -f personal_website/secrets.dec.yml
