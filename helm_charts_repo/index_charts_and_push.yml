@@ -1,7 +1,7 @@
 ---
 
 resources:
-  - name: helm-charts-repo
+  - name: helm-charts-repo-get
     type: git
     icon: github
     source:
@@ -12,11 +12,21 @@ resources:
       ignore_paths:
         - docs/index.yaml
 
+
+  - name: helm-charts-repo-put
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/helm-charts-repo.git
+      branch: master
+      username: ((github_username))
+      password: ((github_password))
+
 jobs:
   - name: helm-index-and-push
     public: false
     plan:
-      - get: helm-charts-repo
+      - get: helm-charts-repo-get
         trigger: true
 
       - task: helm-index
@@ -28,10 +38,10 @@ jobs:
               repository: alpine/helm
 
           inputs:
-            - name: helm-charts-repo
+            - name: helm-charts-repo-get
 
           outputs:
-            - name: helm-charts-repo
+            - name: helm-charts-repo-get
 
           run:
             path: helm
@@ -41,7 +51,7 @@ jobs:
               - docs
               - --url
               - https://flipenergy.github.io/helm-charts-repo/
-            dir: helm-charts-repo
+            dir: helm-charts-repo-get
 
       - task: git-commit
         config:
@@ -52,10 +62,10 @@ jobs:
               repository: alpine/git
 
           inputs:
-            - name: helm-charts-repo
+            - name: helm-charts-repo-get
 
           outputs:
-            - name: helm-charts-repo
+            - name: helm-charts-repo-get
 
           run:
             path: sh
@@ -72,8 +82,8 @@ jobs:
                 git add .
 
                 git commit -m "update index.yaml"
-            dir: helm-charts-repo
+            dir: helm-charts-repo-get
 
-      - put: helm-charts-repo
+      - put: helm-charts-repo-put
         params:
-          repository: helm-charts-repo
+          repository: helm-charts-repo-get
