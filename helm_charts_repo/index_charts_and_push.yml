@@ -9,6 +9,8 @@ resources:
       branch: master
       username: ((github_username))
       password: ((github_password))
+      ignore_paths:
+        - docs/index.yaml
 
 jobs:
   - name: helm-index-and-push
@@ -16,9 +18,6 @@ jobs:
     plan:
       - get: helm-charts-repo
         trigger: true
-        params:
-          ignore_paths:
-            - docs/index.yaml
 
       - task: helm-index
         config:
@@ -42,6 +41,37 @@ jobs:
               - docs
               - --url
               - https://flipenergy.github.io/helm-charts-repo/
+            dir: helm-charts-repo
+
+      - task: git-commit
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: alpine/git
+
+          inputs:
+            - name: helm-charts-repo
+
+          outputs:
+            - name: helm-charts-repo
+
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                #!/bin/bash
+
+                git config user.email "dennis.zhang.nrg@gmail.com"
+                git config user.name "Concourse Worker"
+
+                git --no-pager diff
+
+                git add .
+
+                git commit -m "update index.yaml"
             dir: helm-charts-repo
 
       - put: helm-charts-repo
