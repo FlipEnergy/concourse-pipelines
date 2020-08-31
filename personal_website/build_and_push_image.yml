@@ -2,12 +2,21 @@
 
 resources:
   # Repo to pull for building image
-  - name: personal-website-repo
+  - name: personal-website-repo-master
     type: git
     icon: github
     source:
       uri: https://github.com/FlipEnergy/personal-website.git
       branch: master
+
+  - name: personal-website-repo-version
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/personal-website.git
+      branch: master
+      paths:
+        - version
 
   # Where we will push the image to
   - name: docker-hub-repo-latest
@@ -33,7 +42,7 @@ jobs:
   - name: build-and-push-latest-image
     public: false
     plan:
-      - get: personal-website-repo
+      - get: personal-website-repo-master
         trigger: true
 
       - task: build-image
@@ -46,13 +55,13 @@ jobs:
               repository: vito/oci-build-task
 
           inputs:
-            - name: personal-website-repo
+            - name: personal-website-repo-master
 
           outputs:
             - name: image
 
           params:
-            CONTEXT: personal-website-repo
+            CONTEXT: personal-website-repo-master
           run:
             path: build
 
@@ -64,11 +73,8 @@ jobs:
   - name: build-and-push-release-image
     public: false
     plan:
-      - get: personal-website-repo
+      - get: personal-website-repo-version
         trigger: true
-        params:
-          paths:
-            - version
 
       - task: build-image
         privileged: true
@@ -80,17 +86,17 @@ jobs:
               repository: vito/oci-build-task
 
           inputs:
-            - name: personal-website-repo
+            - name: personal-website-repo-version
 
           outputs:
             - name: image
 
           params:
-            CONTEXT: personal-website-repo
+            CONTEXT: personal-website-repo-version
           run:
             path: build
 
       - put: docker-hub-repo-stable
         params:
           image: image/image.tar
-          additional_tags: personal-website-repo/version
+          additional_tags: personal-website-repo-version/version
