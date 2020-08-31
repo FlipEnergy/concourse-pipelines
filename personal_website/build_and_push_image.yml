@@ -41,6 +41,7 @@ resources:
 jobs:
   - name: build-and-push-latest-image
     public: false
+    serial: true
     plan:
       - get: personal-website-repo-master
         trigger: true
@@ -72,6 +73,7 @@ jobs:
 ## Release image job
   - name: build-and-push-release-image
     public: false
+    serial: true
     plan:
       - get: personal-website-repo-version
         trigger: true

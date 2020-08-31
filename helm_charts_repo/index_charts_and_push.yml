@@ -25,6 +25,7 @@ resources:
 jobs:
   - name: helm-index-and-push
     public: false
+    serial: true
     plan:
       - get: helm-charts-repo-get
         trigger: true
