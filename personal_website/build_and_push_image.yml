@@ -40,7 +40,6 @@ resources:
 ## Latest image jobs
 jobs:
   - name: build-and-push-latest-image
-    public: false
     serial: true
     plan:
       - get: personal-website-repo-master
@@ -72,7 +71,6 @@ jobs:
 
 ## Release image job
   - name: build-and-push-release-image
-    public: false
     serial: true
     plan:
       - get: personal-website-repo-version
