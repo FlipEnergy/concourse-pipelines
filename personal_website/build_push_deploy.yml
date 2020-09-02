@@ -8,6 +8,8 @@ resources:
     source:
       uri: https://github.com/FlipEnergy/personal-website.git
       branch: master
+      paths:
+        - flipenergy
 
   - name: personal-website-repo-version
     type: git

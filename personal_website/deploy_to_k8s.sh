@@ -9,9 +9,6 @@ echo "Decrypting kubectl config..."
 mkdir -p ~/.kube
 sops -d personal-website-repo-version/kube_config.enc.yml > ~/.kube/config
 
-echo "Getting pods for dennis-site..."
-kubectl -n dennis-site get pods
-
 cd personal-website-repo-version
 echo
 
