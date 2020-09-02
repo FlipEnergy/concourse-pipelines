@@ -8,7 +8,7 @@ resource_types:
 
 resources:
   # Repo to pull for building image
-  - name: personal-website-repo-master
+  - name: personal-website-post-update
     type: git
     icon: github
     source:
@@ -17,7 +17,7 @@ resources:
       paths:
         - flipenergy
 
-  - name: personal-website-repo-version
+  - name: personal-website-version-update
     type: git
     icon: github
     source:
@@ -62,7 +62,7 @@ jobs:
   - name: build-and-push-latest-image
     serial: true
     plan:
-      - get: personal-website-repo-master
+      - get: personal-website-post-update
         trigger: true
 
       - task: build-image
@@ -75,13 +75,13 @@ jobs:
               repository: vito/oci-build-task
 
           inputs:
-            - name: personal-website-repo-master
+            - name: personal-website-post-update
 
           outputs:
             - name: image
 
           params:
-            CONTEXT: personal-website-repo-master
+            CONTEXT: personal-website-post-update
           run:
             path: build
 
@@ -93,7 +93,7 @@ jobs:
   - name: build-and-push-release-image
     serial: true
     plan:
-      - get: personal-website-repo-version
+      - get: personal-website-version-update
         trigger: true
 
       - task: build-image
@@ -106,25 +106,25 @@ jobs:
               repository: vito/oci-build-task
 
           inputs:
-            - name: personal-website-repo-version
+            - name: personal-website-version-update
 
           outputs:
             - name: image
 
           params:
-            CONTEXT: personal-website-repo-version
+            CONTEXT: personal-website-version-update
           run:
             path: build
 
       - put: docker-hub-repo-stable
         params:
           image: image/image.tar
-          additional_tags: personal-website-repo-version/version
+          additional_tags: personal-website-version-update/version
 
   - name: deploy-to-k8s
     serial: true
     plan:
-      - get: personal-website-repo-version
+      - get: personal-website-version-update
       - get: docker-hub-repo-stable
         trigger: true
         passed: [build-and-push-release-image]
@@ -162,7 +162,7 @@ jobs:
               repository: praqma/helmsman
 
           inputs:
-            - name: personal-website-repo-version
+            - name: personal-website-version-update
             - name: concourse-pipelines-repo
 
           run:
