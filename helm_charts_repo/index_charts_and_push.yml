@@ -1,5 +1,11 @@
 ---
 
+resource_types:
+  - name: mattermost-webhook
+    type: docker-image
+    source:
+      repository: arbourd/concourse-slack-alert-resource
+
 resources:
   - name: helm-charts-repo-get
     type: git
@@ -12,7 +18,6 @@ resources:
       ignore_paths:
         - docs/index.yaml
 
-
   - name: helm-charts-repo-put
     type: git
     icon: github
@@ -21,6 +26,11 @@ resources:
       branch: master
       username: ((github_username))
       password: ((github_password))
+
+  - name: notify-mattermost
+    type: mattermost-webhook
+    source:
+      url: ((mattermost_webhook_url))
 
 jobs:
   - name: helm-index-and-push
@@ -87,3 +97,13 @@ jobs:
       - put: helm-charts-repo-put
         params:
           repository: helm-charts-repo-get
+
+    on_success:
+      put: notify-mattermost
+      params:
+        alert_type: success
+
+    on_failure:
+      put: notify-mattermost
+      params:
+        alert_type: failed

@@ -1,5 +1,11 @@
 ---
 
+resource_types:
+  - name: mattermost-webhook
+    type: docker-image
+    source:
+      repository: arbourd/concourse-slack-alert-resource
+
 resources:
   # Repo to pull for building image
   - name: personal-website-repo-master
@@ -45,6 +51,11 @@ resources:
       username: ((docker_hub_username))
       password: ((docker_hub_password))
       tag: stable
+
+  - name: notify-mattermost
+    type: mattermost-webhook
+    source:
+      url: ((mattermost_webhook_url))
 
 ## Latest image build and push jobs
 jobs:
@@ -156,3 +167,13 @@ jobs:
 
           run:
             path: concourse-pipelines-repo/personal_website/deploy_to_k8s.sh
+
+    on_success:
+      put: notify-mattermost
+      params:
+        alert_type: success
+
+    on_failure:
+      put: notify-mattermost
+      params:
+        alert_type: failed
