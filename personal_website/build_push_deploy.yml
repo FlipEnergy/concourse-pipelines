@@ -23,7 +23,7 @@ resources:
     icon: github
     source:
       uri: https://github.com/FlipEnergy/concourse-pipelines.git
-      branch: deploy_to_k8s
+      branch: master
 
   # Where we will push the image to
   - name: docker-hub-repo-latest
@@ -50,7 +50,7 @@ jobs:
     serial: true
     plan:
       - get: personal-website-repo-master
-        # trigger: true
+        trigger: true
 
       - task: build-image
         privileged: true
@@ -81,7 +81,7 @@ jobs:
     serial: true
     plan:
       - get: personal-website-repo-version
-        # trigger: true
+        trigger: true
 
       - task: build-image
         privileged: true
