@@ -7,7 +7,7 @@ resource_types:
       repository: arbourd/concourse-slack-alert-resource
 
 resources:
-  - name: helm-charts-repo-get
+  - name: k8s-homelab-helm-repo-get
     type: git
     icon: github
     source:
@@ -17,9 +17,9 @@ resources:
       password: ((github_password))
       ignore_paths:
         - index.yaml
-        # - README.md
+        - README.md
 
-  - name: helm-charts-repo-put
+  - name: k8s-homelab-helm-repo-put
     type: git
     icon: github
     source:
@@ -37,7 +37,7 @@ jobs:
   - name: helm-index-and-push
     serial: true
     plan:
-      - get: helm-charts-repo-get
+      - get: k8s-homelab-helm-repo-get
         trigger: true
 
       - task: helm-index
@@ -49,10 +49,10 @@ jobs:
               repository: alpine/helm
 
           inputs:
-            - name: helm-charts-repo-get
+            - name: k8s-homelab-helm-repo-get
 
           outputs:
-            - name: helm-charts-repo-get
+            - name: k8s-homelab-helm-repo-get
 
           run:
             path: helm
@@ -62,7 +62,7 @@ jobs:
               - .
               - --url
               - https://flipenergy.github.io/k8s-homelab/
-            dir: helm-charts-repo-get
+            dir: k8s-homelab-helm-repo-get
 
       - task: git-commit
         config:
@@ -73,10 +73,10 @@ jobs:
               repository: alpine/git
 
           inputs:
-            - name: helm-charts-repo-get
+            - name: k8s-homelab-helm-repo-get
 
           outputs:
-            - name: helm-charts-repo-get
+            - name: k8s-homelab-helm-repo-get
 
           run:
             path: sh
@@ -93,11 +93,11 @@ jobs:
                 git add .
 
                 git commit -m "update index.yaml"
-            dir: helm-charts-repo-get
+            dir: k8s-homelab-helm-repo-get
 
-      - put: helm-charts-repo-put
+      - put: k8s-homelab-helm-repo-put
         params:
-          repository: helm-charts-repo-get
+          repository: k8s-homelab-helm-repo-get
 
     on_success:
       put: notify-mattermost
