@@ -11,19 +11,20 @@ resources:
     type: git
     icon: github
     source:
-      uri: https://github.com/FlipEnergy/helm-charts-repo.git
-      branch: master
+      uri: https://github.com/FlipEnergy/k8s-homelab.git
+      branch: gh-pages
       username: ((github_username))
       password: ((github_password))
       ignore_paths:
-        - docs/index.yaml
+        - index.yaml
+        # - README.md
 
   - name: helm-charts-repo-put
     type: git
     icon: github
     source:
-      uri: https://github.com/FlipEnergy/helm-charts-repo.git
-      branch: master
+      uri: https://github.com/FlipEnergy/k8s-homelab.git
+      branch: gh-pages
       username: ((github_username))
       password: ((github_password))
 
@@ -58,9 +59,9 @@ jobs:
             args:
               - repo
               - index
-              - docs
+              - .
               - --url
-              - https://flipenergy.github.io/helm-charts-repo/
+              - https://flipenergy.github.io/k8s-homelab/
             dir: helm-charts-repo-get
 
       - task: git-commit
