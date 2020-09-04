@@ -15,9 +15,8 @@ resources:
       branch: gh-pages
       username: ((github_username))
       password: ((github_password))
-      ignore_paths:
-        - index.yaml
-        - README.md
+      paths:
+        - charts
 
   - name: k8s-homelab-helm-repo-put
     type: git
