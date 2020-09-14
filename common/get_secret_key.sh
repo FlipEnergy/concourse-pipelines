@@ -7,7 +7,7 @@ apk add -q jq
 echo
 
 echo "Logging in..."
-bw config server bitwarden.pleasenoddos.com
+bw config server $BW_SERVER
 
 export BW_SESSION=`bw login $BW_USERNAME $BW_PASSWORD --raw`
 

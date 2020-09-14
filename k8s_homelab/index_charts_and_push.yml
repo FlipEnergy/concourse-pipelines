@@ -13,8 +13,6 @@ resources:
     source:
       uri: https://github.com/FlipEnergy/k8s-homelab.git
       branch: gh-pages
-      username: ((github_username))
-      password: ((github_password))
       paths:
         - charts
 

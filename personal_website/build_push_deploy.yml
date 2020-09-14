@@ -145,13 +145,14 @@ jobs:
             - name: concourse-pipelines-repo
 
           params:
+            BW_ITEM: ((bitwarden_item))
+            BW_SERVER: ((bitwarden_server))
             BW_USERNAME: ((bitwarden_username))
             BW_PASSWORD: ((bitwarden_password))
-            BW_ITEM: ((bitwarden_item))
 
           run:
             path: ./get_secret_key.sh
-            dir: concourse-pipelines-repo/personal_website
+            dir: concourse-pipelines-repo/common
 
       - task: deploy-to-k8s
         config:

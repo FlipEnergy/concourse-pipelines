@@ -3,7 +3,7 @@
 export DENNIS_SITE_VERSION=`cat personal-website-version-update/version`
 
 echo "Importing secret key..."
-gpg --import concourse-pipelines-repo/personal_website/secret.key
+gpg --import concourse-pipelines-repo/common/secret.key
 
 echo "Decrypting kubectl config..."
 mkdir -p ~/.kube

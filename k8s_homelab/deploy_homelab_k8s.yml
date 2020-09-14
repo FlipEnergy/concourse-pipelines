@@ -1,0 +1,84 @@
+---
+
+resource_types:
+  - name: mattermost-webhook
+    type: docker-image
+    source:
+      repository: arbourd/concourse-slack-alert-resource
+
+resources:
+  - name: k8s-homelab-repo
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/k8s-homelab.git
+      branch: master
+
+  - name: concourse-pipelines-repo
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/concourse-pipelines.git
+      branch: master
+
+  - name: notify-mattermost
+    type: mattermost-webhook
+    source:
+      url: ((mattermost_webhook_url))
+
+jobs:
+  - name: deploy-k8s-homelab
+    serial: true
+    plan:
+      - get: k8s-homelab-repo
+        trigger: true
+      - get: concourse-pipelines-repo
+
+      - task: get-secret-key
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: frealmyr/bitwarden-cli-docker
+
+          inputs:
+            - name: concourse-pipelines-repo
+
+          outputs:
+            - name: concourse-pipelines-repo
+
+          params:
+            BW_ITEM: ((bitwarden_item))
+            BW_SERVER: ((bitwarden_server))
+            BW_USERNAME: ((bitwarden_username))
+            BW_PASSWORD: ((bitwarden_password))
+
+          run:
+            path: ./get_secret_key.sh
+            dir: concourse-pipelines-repo/common
+
+      - task: deploy-homelab-k8s
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: praqma/helmsman
+
+          inputs:
+            - name: k8s-homelab-repo
+            - name: concourse-pipelines-repo
+
+          run:
+            path: concourse-pipelines-repo/k8s_homelab/deploy_k8s_homelab.sh
+
+    on_success:
+      put: notify-mattermost
+      params:
+        alert_type: success
+
+    on_failure:
+      put: notify-mattermost
+      params:
+        alert_type: failed
