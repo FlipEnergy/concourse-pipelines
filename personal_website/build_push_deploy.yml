@@ -123,6 +123,7 @@ jobs:
     serial: true
     plan:
       - get: personal-website-repo
+        passed: [build-and-push-release-image]
       - get: docker-hub-repo-stable
         trigger: true
         passed: [build-and-push-release-image]
