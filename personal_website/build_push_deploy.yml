@@ -8,23 +8,20 @@ resource_types:
 
 resources:
   # Repo to pull for building image
-  - name: personal-website-post-update
+  - name: personal-website-repo
     type: git
     icon: github
     source:
       uri: https://github.com/FlipEnergy/personal-website.git
       branch: master
-      paths:
-        - flipenergy
 
-  - name: personal-website-version-update
-    type: git
-    icon: github
+  - name: personal-website-version
+    type: semver
     source:
+      driver: git
       uri: https://github.com/FlipEnergy/personal-website.git
       branch: master
-      paths:
-        - version
+      file: version
 
   - name: concourse-pipelines-repo
     type: git
@@ -62,7 +59,7 @@ jobs:
   - name: build-and-push-latest-image
     serial: true
     plan:
-      - get: personal-website-post-update
+      - get: personal-website-repo
         trigger: true
 
       - task: build-image
@@ -75,13 +72,13 @@ jobs:
               repository: vito/oci-build-task
 
           inputs:
-            - name: personal-website-post-update
+            - name: personal-website-repo
 
           outputs:
             - name: image
 
           params:
-            CONTEXT: personal-website-post-update
+            CONTEXT: personal-website-repo
           run:
             path: build
 
@@ -93,7 +90,8 @@ jobs:
   - name: build-and-push-release-image
     serial: true
     plan:
-      - get: personal-website-version-update
+      - get: personal-website-repo
+      - get: personal-website-version
         trigger: true
 
       - task: build-image
@@ -106,25 +104,25 @@ jobs:
               repository: vito/oci-build-task
 
           inputs:
-            - name: personal-website-version-update
+            - name: personal-website-repo
 
           outputs:
             - name: image
 
           params:
-            CONTEXT: personal-website-version-update
+            CONTEXT: personal-website-repo
           run:
             path: build
 
       - put: docker-hub-repo-stable
         params:
           image: image/image.tar
-          additional_tags: personal-website-version-update/version
+          additional_tags: personal-website-repo/version
 
   - name: deploy-to-k8s
     serial: true
     plan:
-      - get: personal-website-version-update
+      - get: personal-website-repo
       - get: docker-hub-repo-stable
         trigger: true
         passed: [build-and-push-release-image]
@@ -163,7 +161,7 @@ jobs:
               repository: praqma/helmsman
 
           inputs:
-            - name: personal-website-version-update
+            - name: personal-website-repo
             - name: concourse-pipelines-repo
 
           run:
