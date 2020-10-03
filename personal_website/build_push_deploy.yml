@@ -14,6 +14,7 @@ resources:
     source:
       uri: https://github.com/FlipEnergy/personal-website.git
       branch: master
+    check_every: 30s
 
   - name: personal-website-version
     type: semver
