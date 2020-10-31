@@ -12,4 +12,4 @@ cd k8s-homelab-repo
 echo
 
 kubectl apply -f coredns_configmap.yaml
-helmsman --apply -f homelab.yaml
+helmsman -p 3 --apply -f homelab.yaml
