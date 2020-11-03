@@ -7,22 +7,23 @@ resource_types:
       repository: arbourd/concourse-slack-alert-resource
 
 resources:
-  # Repo to pull for building image
+  # latest image build resource
   - name: personal-website-repo
     type: git
     icon: github
     source:
       uri: https://github.com/FlipEnergy/personal-website.git
       branch: master
-    check_every: 30s
 
-  - name: personal-website-version
-    type: semver
+  # Repo to pull for building image
+  - name: personal-website-repo-version-bump
+    type: git
+    icon: github
     source:
-      driver: git
       uri: https://github.com/FlipEnergy/personal-website.git
       branch: master
-      file: version
+      paths:
+        - version
 
   - name: concourse-pipelines-repo
     type: git
@@ -91,8 +92,7 @@ jobs:
   - name: build-and-push-release-image
     serial: true
     plan:
-      - get: personal-website-repo
-      - get: personal-website-version
+      - get: personal-website-repo-version-bump
         trigger: true
 
       - task: build-image
@@ -105,25 +105,25 @@ jobs:
               repository: vito/oci-build-task
 
           inputs:
-            - name: personal-website-repo
+            - name: personal-website-repo-version-bump
 
           outputs:
             - name: image
 
           params:
-            CONTEXT: personal-website-repo
+            CONTEXT: personal-website-repo-version-bump
           run:
             path: build
 
       - put: docker-hub-repo-stable
         params:
           image: image/image.tar
-          additional_tags: personal-website-repo/version
+          additional_tags: personal-website-repo-version-bump/version
 
   - name: deploy-to-k8s
     serial: true
     plan:
-      - get: personal-website-repo
+      - get: personal-website-repo-version-bump
         passed: [build-and-push-release-image]
       - get: docker-hub-repo-stable
         trigger: true
@@ -139,10 +139,10 @@ jobs:
               repository: frealmyr/bitwarden-cli-docker
 
           inputs:
-            - name: concourse-pipelines-repo
+            - name: personal-website-repo-version-bump
 
           outputs:
-            - name: concourse-pipelines-repo
+            - name: personal-website-repo-version-bump
 
           params:
             BW_ITEM: ((bitwarden_item))
@@ -163,7 +163,7 @@ jobs:
               repository: praqma/helmsman
 
           inputs:
-            - name: personal-website-repo
+            - name: personal-website-repo-version-bump
             - name: concourse-pipelines-repo
 
           run:
