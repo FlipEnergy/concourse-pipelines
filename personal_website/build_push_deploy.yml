@@ -140,6 +140,7 @@ jobs:
 
           inputs:
             - name: personal-website-repo-version-bump
+            - name: concourse-pipelines-repo
 
           outputs:
             - name: personal-website-repo-version-bump
