@@ -77,10 +77,10 @@ jobs:
       put: notify-mattermost
       params:
         alert_type: success
-        text: Success
+        text: $BUILD_JOB_NAME Successful
 
     on_failure:
       put: notify-mattermost
       params:
         alert_type: failed
-        text: Failed
+        text: $BUILD_JOB_NAME Failed
