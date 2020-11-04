@@ -174,8 +174,10 @@ jobs:
       put: notify-mattermost
       params:
         alert_type: success
+        text: Success
 
     on_failure:
       put: notify-mattermost
       params:
         alert_type: failed
+        text: Failed
