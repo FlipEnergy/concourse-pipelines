@@ -16,7 +16,7 @@ resources:
       branch: master
 
   # Repo to pull for building image
-  - name: personal-website-repo-version-bump
+  - name: personal-website-version-bump
     type: git
     icon: github
     source:
@@ -92,7 +92,7 @@ jobs:
   - name: build-and-push-release-image
     serial: true
     plan:
-      - get: personal-website-repo-version-bump
+      - get: personal-website-version-bump
         trigger: true
 
       - task: build-image
@@ -105,25 +105,25 @@ jobs:
               repository: vito/oci-build-task
 
           inputs:
-            - name: personal-website-repo-version-bump
+            - name: personal-website-version-bump
 
           outputs:
             - name: image
 
           params:
-            CONTEXT: personal-website-repo-version-bump
+            CONTEXT: personal-website-version-bump
           run:
             path: build
 
       - put: docker-hub-repo-stable
         params:
           image: image/image.tar
-          additional_tags: personal-website-repo-version-bump/version
+          additional_tags: personal-website-version-bump/version
 
   - name: deploy-to-k8s
     serial: true
     plan:
-      - get: personal-website-repo-version-bump
+      - get: personal-website-version-bump
         passed: [build-and-push-release-image]
       - get: docker-hub-repo-stable
         trigger: true
@@ -139,11 +139,11 @@ jobs:
               repository: frealmyr/bitwarden-cli-docker
 
           inputs:
-            - name: personal-website-repo-version-bump
+            - name: personal-website-version-bump
             - name: concourse-pipelines-repo
 
           outputs:
-            - name: personal-website-repo-version-bump
+            - name: personal-website-version-bump
             - name: concourse-pipelines-repo
 
           params:
@@ -165,7 +165,7 @@ jobs:
               repository: praqma/helmsman
 
           inputs:
-            - name: personal-website-repo-version-bump
+            - name: personal-website-version-bump
             - name: concourse-pipelines-repo
 
           run:
