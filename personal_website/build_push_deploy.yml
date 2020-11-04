@@ -144,6 +144,7 @@ jobs:
 
           outputs:
             - name: personal-website-repo-version-bump
+            - name: concourse-pipelines-repo
 
           params:
             BW_ITEM: ((bitwarden_item))
@@ -174,10 +175,10 @@ jobs:
       put: notify-mattermost
       params:
         alert_type: success
-        text: $BUILD_JOB_NAME Successful
+        message: Personal Website Deploy Successful
 
     on_failure:
       put: notify-mattermost
       params:
         alert_type: failed
-        text: $BUILD_JOB_NAME Failed
+        message: Personal Website Deploy Failed

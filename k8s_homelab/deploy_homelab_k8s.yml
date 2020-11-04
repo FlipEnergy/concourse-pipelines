@@ -77,10 +77,10 @@ jobs:
       put: notify-mattermost
       params:
         alert_type: success
-        text: $BUILD_JOB_NAME Successful
+        message: Homelab K8s Deploy Successful
 
     on_failure:
       put: notify-mattermost
       params:
         alert_type: failed
-        text: $BUILD_JOB_NAME Failed
+        message: Homelab K8s Deploy Failed

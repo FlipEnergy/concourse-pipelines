@@ -100,10 +100,10 @@ jobs:
       put: notify-mattermost
       params:
         alert_type: success
-        text: $BUILD_JOB_NAME Successful
+        message: Helm Repo Update Successful
 
     on_failure:
       put: notify-mattermost
       params:
         alert_type: failed
-        text: $BUILD_JOB_NAME Failed
+        message: Helm Repo Update Failed
