@@ -65,6 +65,7 @@ jobs:
             type: registry-image
             source:
               repository: praqma/helmsman
+              tag: v3.5.1
 
           inputs:
             - name: k8s-homelab-repo
