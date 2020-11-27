@@ -2,9 +2,12 @@
 
 resource_types:
   - name: mattermost-webhook
-    type: docker-image
+    type: registry-image
     source:
       repository: arbourd/concourse-slack-alert-resource
+      tag: ((mattermost_alert_tag))
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
 
 resources:
   # latest image build resource
@@ -72,6 +75,9 @@ jobs:
             type: registry-image
             source:
               repository: vito/oci-build-task
+              tag: ((oci_build_task_tag))
+              username: ((docker_hub_username))
+              password: ((docker_hub_password))
 
           inputs:
             - name: personal-website-repo
@@ -103,6 +109,9 @@ jobs:
             type: registry-image
             source:
               repository: vito/oci-build-task
+              tag: ((oci_build_task_tag))
+              username: ((docker_hub_username))
+              password: ((docker_hub_password))
 
           inputs:
             - name: personal-website-version-bump
@@ -137,6 +146,8 @@ jobs:
             type: registry-image
             source:
               repository: frealmyr/bitwarden-cli-docker
+              username: ((docker_hub_username))
+              password: ((docker_hub_password))
 
           inputs:
             - name: personal-website-version-bump
@@ -163,7 +174,9 @@ jobs:
             type: registry-image
             source:
               repository: praqma/helmsman
-              tag: v3.4.6
+              tag: ((helmsman_tag))
+              username: ((docker_hub_username))
+              password: ((docker_hub_password))
 
           inputs:
             - name: personal-website-version-bump

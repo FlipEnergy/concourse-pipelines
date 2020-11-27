@@ -2,9 +2,12 @@
 
 resource_types:
   - name: mattermost-webhook
-    type: docker-image
+    type: registry-image
     source:
       repository: arbourd/concourse-slack-alert-resource
+      tag: ((mattermost_alert_tag))
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
 
 resources:
   - name: k8s-homelab-repo
@@ -41,6 +44,8 @@ jobs:
             type: registry-image
             source:
               repository: frealmyr/bitwarden-cli-docker
+              username: ((docker_hub_username))
+              password: ((docker_hub_password))
 
           inputs:
             - name: concourse-pipelines-repo
@@ -65,7 +70,9 @@ jobs:
             type: registry-image
             source:
               repository: praqma/helmsman
-              tag: v3.4.6
+              tag: ((helmsman_tag))
+              username: ((docker_hub_username))
+              password: ((docker_hub_password))
 
           inputs:
             - name: k8s-homelab-repo
