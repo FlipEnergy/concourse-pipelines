@@ -47,6 +47,7 @@ jobs:
             type: registry-image
             source:
               repository: alpine/helm
+              tag: ((alpine_helm_tag))
               username: ((docker_hub_username))
               password: ((docker_hub_password))
 
@@ -73,6 +74,7 @@ jobs:
             type: registry-image
             source:
               repository: alpine/git
+              tag: ((alpine_git_tag))
               username: ((docker_hub_username))
               password: ((docker_hub_password))
 
