@@ -15,5 +15,5 @@ k8s-homelab-helm-repo-pipeline:
 	rm -f common/secrets.dec.yml
 
 build-push-bitwarden-cli:
-	docker build -t flipenergy/bitwarden_cli:0.1.0 -f dockerfiles/bitwarden_cli dockerfiles/
-	docker push flipenergy/bitwarden_cli:0.1.0
+	docker build -t flipenergy/bitwarden_cli -f dockerfiles/bitwarden_cli dockerfiles/
+	docker push flipenergy/bitwarden_cli
