@@ -145,7 +145,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: frealmyr/bitwarden-cli-docker
+              repository: flipenergy/bitwarden_cli
               username: ((docker_hub_username))
               password: ((docker_hub_password))
 

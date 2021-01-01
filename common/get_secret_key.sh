@@ -1,11 +1,5 @@
 #!/bin/sh -e
 
-alias bw=/home/node/app/bin/bw
-
-echo "Installing jq..."
-apk add -q jq
-echo
-
 echo "Logging in..."
 bw config server $BW_SERVER
 
