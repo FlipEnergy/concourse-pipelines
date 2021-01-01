@@ -1,11 +1,11 @@
 ---
 
 resource_types:
-  - name: mattermost-webhook
+  - name: mattermost-notification
     type: registry-image
     source:
-      repository: arbourd/concourse-slack-alert-resource
-      tag: ((mattermost_alert_tag))
+      repository: cfcommunity/slack-notification-resource
+      tag: ((slack-notification-resource-tag))
       username: ((docker_hub_username))
       password: ((docker_hub_password))
 
@@ -55,7 +55,7 @@ resources:
       tag: stable
 
   - name: notify-mattermost
-    type: mattermost-webhook
+    type: mattermost-notification
     source:
       url: ((mattermost_webhook_url))
 
@@ -188,11 +188,11 @@ jobs:
     on_success:
       put: notify-mattermost
       params:
-        alert_type: success
-        message: Personal Website Deploy Successful
+        icon_url: ((concourse-logo-url))
+        text: ((success_text))
 
     on_failure:
       put: notify-mattermost
       params:
-        alert_type: failed
-        message: Personal Website Deploy Failed
+        icon_url: ((concourse-logo-url))
+        text: ((failed_text))
