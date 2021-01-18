@@ -13,4 +13,4 @@ chmod 600 ~/.kube/config
 cd personal-website-version-bump
 echo
 
-helmsman -no-ns --apply -f dennis-site-DSF.yaml
+helmsman --apply -f dennis-site-DSF.yaml
