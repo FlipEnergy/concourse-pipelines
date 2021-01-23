@@ -1,6 +1,6 @@
 alpine_git_tag: 1.0.22
 alpine_helm_tag: 3.4.1
-helmsman_tag: v3.4.6
+helmsman_tag: v3.6.3
 slack-notification-resource-tag: 1.6.0
 oci_build_task_tag: 0.3.0
 concourse-logo-url: https://raw.githubusercontent.com/concourse/brand/master/concourse_logo/concourse_logo_blue_square.png
