@@ -1,5 +1,3 @@
----
-
 resource_types:
   - name: mattermost-notification
     type: registry-image
@@ -39,6 +37,7 @@ resources:
 
   - name: notify-mattermost
     type: mattermost-notification
+    icon: webhook
     source:
       url: ((mattermost_webhook_url))
 
@@ -105,6 +104,7 @@ jobs:
           outputs:
             - name: personal-website-version-bump
             - name: concourse-pipelines-repo
+            - name: tmp_dir
 
           params:
             BW_ITEM: ((bitwarden_item))
@@ -113,8 +113,7 @@ jobs:
             BW_PASSWORD: ((bitwarden_password))
 
           run:
-            path: ./get_secret_key.sh
-            dir: concourse-pipelines-repo/common
+            path: concourse-pipelines-repo/common/scripts/get_secret_key.sh
 
       - task: deploy-to-k8s
         config:
@@ -130,6 +129,7 @@ jobs:
           inputs:
             - name: personal-website-version-bump
             - name: concourse-pipelines-repo
+            - name: tmp_dir
 
           run:
             path: concourse-pipelines-repo/personal_website/deploy_to_k8s.sh

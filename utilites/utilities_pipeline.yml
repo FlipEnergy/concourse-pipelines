@@ -1,0 +1,107 @@
+resource_types:
+  - name: mattermost-notification
+    type: registry-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+      tag: ((slack-notification-resource-tag))
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
+
+resources:
+  - name: bitwarden-cli-github-release
+    type: github-release
+    icon: github
+    source:
+      owner: bitwarden
+      repository: cli
+
+  - name: concourse-pipelines-repo
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/concourse-pipelines.git
+      branch: master
+
+  # Where we will push the image to
+  - name: docker-hub-repo
+    type: registry-image
+    icon: docker
+    source:
+      repository: flipenergy/bitwarden_cli
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
+      tag: latest
+
+  - name: notify-mattermost
+    type: mattermost-notification
+    icon: webhook
+    source:
+      url: ((mattermost_webhook_url))
+
+jobs:
+## Release image build and push job
+  - name: build-and-push-bitwarden-cli-image
+    serial: true
+    plan:
+      - get: bitwarden-cli-github-release
+        trigger: true
+      - get: concourse-pipelines-repo
+
+      - task: write-build-args-file
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: alpine
+          
+          inputs:
+            - name: bitwarden-cli-github-release
+
+          outputs:
+            - name: tmp_dir
+
+          run:
+            path: mkdir -p tmp_dir && echo "VERSION=$(cat bitwarden-cli-github-release/version)" > tmp_dir/build_args
+
+      - task: build-image
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: vito/oci-build-task
+              tag: ((oci_build_task_tag))
+              username: ((docker_hub_username))
+              password: ((docker_hub_password))
+
+          inputs:
+            - name: concourse-pipelines-repo
+            - name: tmp_dir
+
+          outputs:
+            - name: image
+
+          params:
+            CONTEXT: concourse-pipelines-repo/utilites/bitwarden_cli
+            BUILD_ARGS_FILE : tmp_dir/build_args
+          run:
+            path: build
+
+      - put: docker-hub-repo
+        params:
+          image: image/image.tar
+          additional_tags: bitwarden-cli-github-release/version
+
+    on_success:
+      put: notify-mattermost
+      params:
+        icon_url: ((concourse-logo-url))
+        text: ((success_text))
+
+    on_failure:
+      put: notify-mattermost
+      params:
+        icon_url: ((concourse-logo-url))
+        text: ((failed_text))

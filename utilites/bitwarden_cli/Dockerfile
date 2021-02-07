@@ -1,12 +1,12 @@
 # Dockerfile for bitwarden cli + jq
-# Based on frealmyr/bitwarden-cli-docker
 
 FROM node:13-alpine
+ARG VERSION
 
 RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
 WORKDIR /home/node/app
 
-RUN npm install --prefix /home/node/app -g @bitwarden/cli
+RUN npm install --prefix /home/node/app -g "@bitwarden/cli@${VERSION}"
 
 RUN apk add --no-cache jq
 
