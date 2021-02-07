@@ -10,14 +10,6 @@ resource_types:
       password: ((docker_hub_password))
 
 resources:
-  # latest image build resource
-  - name: personal-website-repo
-    type: git
-    icon: github
-    source:
-      uri: https://github.com/FlipEnergy/personal-website.git
-      branch: master
-
   # Repo to pull for building image
   - name: personal-website-version-bump
     type: git
@@ -36,7 +28,7 @@ resources:
       branch: master
 
   # Where we will push the image to
-  - name: docker-hub-repo-latest
+  - name: docker-hub-repo
     type: registry-image
     icon: docker
     source:
@@ -45,55 +37,12 @@ resources:
       password: ((docker_hub_password))
       tag: latest
 
-  - name: docker-hub-repo-stable
-    type: registry-image
-    icon: docker
-    source:
-      repository: flipenergy/flipenergy
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
-      tag: stable
-
   - name: notify-mattermost
     type: mattermost-notification
     source:
       url: ((mattermost_webhook_url))
 
-## Latest image build and push jobs
 jobs:
-  - name: build-and-push-latest-image
-    serial: true
-    plan:
-      - get: personal-website-repo
-        trigger: true
-
-      - task: build-image
-        privileged: true
-        config:
-          platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: vito/oci-build-task
-              tag: ((oci_build_task_tag))
-              username: ((docker_hub_username))
-              password: ((docker_hub_password))
-
-          inputs:
-            - name: personal-website-repo
-
-          outputs:
-            - name: image
-
-          params:
-            CONTEXT: personal-website-repo
-          run:
-            path: build
-
-      - put: docker-hub-repo-latest
-        params:
-          image: image/image.tar
-
 ## Release image build and push job
   - name: build-and-push-release-image
     serial: true
@@ -124,7 +73,7 @@ jobs:
           run:
             path: build
 
-      - put: docker-hub-repo-stable
+      - put: docker-hub-repo
         params:
           image: image/image.tar
           additional_tags: personal-website-version-bump/version
@@ -134,7 +83,7 @@ jobs:
     plan:
       - get: personal-website-version-bump
         passed: [build-and-push-release-image]
-      - get: docker-hub-repo-stable
+      - get: docker-hub-repo
         trigger: true
         passed: [build-and-push-release-image]
       - get: concourse-pipelines-repo
