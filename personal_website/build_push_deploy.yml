@@ -78,7 +78,7 @@ jobs:
           image: image/image.tar
           additional_tags: personal-website-version-bump/version
 
-  - name: deploy-to-k8s
+  - name: deploy-website-to-k8s
     serial: true
     plan:
       - get: personal-website-version-bump
