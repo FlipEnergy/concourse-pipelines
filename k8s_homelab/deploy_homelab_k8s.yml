@@ -24,6 +24,24 @@ resources:
       uri: https://github.com/FlipEnergy/concourse-pipelines.git
       branch: master
 
+  - name: k8s-homelab-helm-repo-get
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/k8s-homelab.git
+      branch: gh-pages
+      paths:
+        - charts
+
+  - name: k8s-homelab-helm-repo-put
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/k8s-homelab.git
+      branch: gh-pages
+      username: ((github_username))
+      password: ((github_password))
+
   - name: notify-mattermost
     type: mattermost-notification
     source:
@@ -80,6 +98,89 @@ jobs:
 
           run:
             path: concourse-pipelines-repo/k8s_homelab/deploy_k8s_homelab.sh
+
+    on_success:
+      put: notify-mattermost
+      params:
+        icon_url: ((concourse-logo-url))
+        text: ((success_text))
+
+    on_failure:
+      put: notify-mattermost
+      params:
+        icon_url: ((concourse-logo-url))
+        text: ((failed_text))
+
+  - name: helm-index-and-push
+    serial: true
+    plan:
+      - get: k8s-homelab-helm-repo-get
+        trigger: true
+
+      - task: helm-index
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: alpine/helm
+              tag: ((alpine_helm_tag))
+              username: ((docker_hub_username))
+              password: ((docker_hub_password))
+
+          inputs:
+            - name: k8s-homelab-helm-repo-get
+
+          outputs:
+            - name: k8s-homelab-helm-repo-get
+
+          run:
+            path: helm
+            args:
+              - repo
+              - index
+              - .
+              - --url
+              - https://flipenergy.github.io/k8s-homelab/
+            dir: k8s-homelab-helm-repo-get
+
+      - task: git-commit
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: alpine/git
+              tag: ((alpine_git_tag))
+              username: ((docker_hub_username))
+              password: ((docker_hub_password))
+
+          inputs:
+            - name: k8s-homelab-helm-repo-get
+
+          outputs:
+            - name: k8s-homelab-helm-repo-get
+
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                #!/bin/bash
+
+                git config user.email "dennis.zhang.nrg@gmail.com"
+                git config user.name "Concourse Worker"
+
+                git --no-pager diff
+
+                git add .
+
+                git commit -m "update index.yaml"
+            dir: k8s-homelab-helm-repo-get
+
+      - put: k8s-homelab-helm-repo-put
+        params:
+          repository: k8s-homelab-helm-repo-get
 
     on_success:
       put: notify-mattermost
