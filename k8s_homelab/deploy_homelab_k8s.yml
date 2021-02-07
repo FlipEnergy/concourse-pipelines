@@ -69,7 +69,7 @@ jobs:
 
           outputs:
             - name: concourse-pipelines-repo
-            - name: tmp_dir
+            - name: secrets
 
           params:
             BW_ITEM: ((bitwarden_item))
@@ -94,7 +94,7 @@ jobs:
           inputs:
             - name: k8s-homelab-repo
             - name: concourse-pipelines-repo
-            - name: tmp_dir
+            - name: secrets
 
           run:
             path: concourse-pipelines-repo/k8s_homelab/deploy_k8s_homelab.sh

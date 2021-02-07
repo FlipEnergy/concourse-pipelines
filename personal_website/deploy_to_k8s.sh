@@ -3,7 +3,7 @@
 export DENNIS_SITE_VERSION=`cat personal-website-version-bump/version`
 
 echo "Importing secret key..."
-gpg --import tmp_dir/secret.key
+gpg --import secrets/secret.key
 
 echo "Decrypting kubectl config..."
 mkdir -p ~/.kube
