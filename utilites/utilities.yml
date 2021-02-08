@@ -1,13 +1,9 @@
 resource_types:
-  - name: mattermost-notification
-    type: registry-image
-    source:
-      repository: cfcommunity/slack-notification-resource
-      tag: ((slack-notification-resource-tag))
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
+  - *mattermost-resouce-type
 
 resources:
+  - *mattermost-resource
+
   - name: bitwarden-cli-github-release
     type: github-release
     icon: github
@@ -32,12 +28,6 @@ resources:
       password: ((docker_hub_password))
       tag: latest
 
-  - name: notify-mattermost
-    type: mattermost-notification
-    icon: webhook
-    source:
-      url: ((mattermost_webhook_url))
-
 jobs:
 ## Release image build and push job
   - name: build-and-push-bitwarden-cli-image
@@ -47,34 +37,11 @@ jobs:
         trigger: true
       - get: concourse-pipelines-repo
 
-      # - task: write-build-args-file
-      #   config:
-      #     platform: linux
-      #     image_resource:
-      #       type: registry-image
-      #       source:
-      #         repository: alpine
-          
-      #     inputs:
-      #       - name: bitwarden-cli-github-release
-
-      #     outputs:
-      #       - name: tmp_dir
-
-      #     run:
-      #       path: mkdir -p tmp_dir && echo "VERSION=$(cat bitwarden-cli-github-release/version)" > tmp_dir/build_args
-
       - task: build-image
         privileged: true
-        config:
+        config: 
           platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: vito/oci-build-task
-              tag: ((oci_build_task_tag))
-              username: ((docker_hub_username))
-              password: ((docker_hub_password))
+          image_resource: *oci-build-image-resource
 
           inputs:
             - name: bitwarden-cli-github-release
@@ -96,14 +63,6 @@ jobs:
           image: image/image.tar
           additional_tags: bitwarden-cli-github-release/version
 
-    on_success:
-      put: notify-mattermost
-      params:
-        icon_url: ((concourse-logo-url))
-        text: ((success_text))
-
-    on_failure:
-      put: notify-mattermost
-      params:
-        icon_url: ((concourse-logo-url))
-        text: ((failed_text))
+    on_success: *notify-success
+    on_error: *notify-failure
+    on_failure: *notify-failure

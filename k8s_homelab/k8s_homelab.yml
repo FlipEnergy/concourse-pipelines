@@ -1,13 +1,9 @@
 resource_types:
-  - name: mattermost-notification
-    type: registry-image
-    source:
-      repository: cfcommunity/slack-notification-resource
-      tag: ((slack-notification-resource-tag))
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
+  - *mattermost-resouce-type
 
 resources:
+  - *mattermost-resource
+
   - name: k8s-homelab-repo
     type: git
     icon: github
@@ -40,12 +36,6 @@ resources:
       username: ((github_username))
       password: ((github_password))
 
-  - name: notify-mattermost
-    type: mattermost-notification
-    icon: webhook
-    source:
-      url: ((mattermost_webhook_url))
-
 jobs:
   - name: deploy-k8s-homelab
     serial: true
@@ -57,12 +47,7 @@ jobs:
       - task: get-secret-key
         config:
           platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: flipenergy/bitwarden_cli
-              username: ((docker_hub_username))
-              password: ((docker_hub_password))
+          image_resource: *bitwarden-cli-image-resource
 
           inputs:
             - name: concourse-pipelines-repo
@@ -81,15 +66,9 @@ jobs:
             path: concourse-pipelines-repo/common/scripts/get_secret_key.sh
 
       - task: deploy-homelab-k8s
-        config:
+        config: 
           platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: praqma/helmsman
-              tag: ((helmsman_tag))
-              username: ((docker_hub_username))
-              password: ((docker_hub_password))
+          image_resource: *helmsman-deploy-image-resource
 
           inputs:
             - name: k8s-homelab-repo
@@ -99,17 +78,10 @@ jobs:
           run:
             path: concourse-pipelines-repo/k8s_homelab/deploy_k8s_homelab.sh
 
-    on_success:
-      put: notify-mattermost
-      params:
-        icon_url: ((concourse-logo-url))
-        text: ((success_text))
-
-    on_failure:
-      put: notify-mattermost
-      params:
-        icon_url: ((concourse-logo-url))
-        text: ((failed_text))
+    on_success: *notify-success
+    on_error: *notify-failure
+    on_failure: *notify-failure
+      
 
   - name: helm-index-and-push
     serial: true
@@ -182,14 +154,6 @@ jobs:
         params:
           repository: k8s-homelab-helm-repo-get
 
-    on_success:
-      put: notify-mattermost
-      params:
-        icon_url: ((concourse-logo-url))
-        text: ((success_text))
-
-    on_failure:
-      put: notify-mattermost
-      params:
-        icon_url: ((concourse-logo-url))
-        text: ((failed_text))
+    on_success: *notify-success
+    on_error: *notify-failure
+    on_failure: *notify-failure

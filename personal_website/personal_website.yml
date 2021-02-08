@@ -1,13 +1,9 @@
 resource_types:
-  - name: mattermost-notification
-    type: registry-image
-    source:
-      repository: cfcommunity/slack-notification-resource
-      tag: ((slack-notification-resource-tag))
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
+  - *mattermost-resouce-type
 
 resources:
+  - *mattermost-resource
+
   # Repo to pull for building image
   - name: personal-website-version-bump
     type: git
@@ -35,12 +31,6 @@ resources:
       password: ((docker_hub_password))
       tag: latest
 
-  - name: notify-mattermost
-    type: mattermost-notification
-    icon: webhook
-    source:
-      url: ((mattermost_webhook_url))
-
 jobs:
 ## Release image build and push job
   - name: build-and-push-release-image
@@ -53,13 +43,7 @@ jobs:
         privileged: true
         config:
           platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: vito/oci-build-task
-              tag: ((oci_build_task_tag))
-              username: ((docker_hub_username))
-              password: ((docker_hub_password))
+          image_resource: *oci-build-image-resource
 
           inputs:
             - name: personal-website-version-bump
@@ -90,12 +74,7 @@ jobs:
       - task: get-secret-key
         config:
           platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: flipenergy/bitwarden_cli
-              username: ((docker_hub_username))
-              password: ((docker_hub_password))
+          image_resource: *bitwarden-cli-image-resource
 
           inputs:
             - name: personal-website-version-bump
@@ -118,13 +97,7 @@ jobs:
       - task: deploy-to-k8s
         config:
           platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: praqma/helmsman
-              tag: ((helmsman_tag))
-              username: ((docker_hub_username))
-              password: ((docker_hub_password))
+          image_resource: *helmsman-deploy-image-resource
 
           inputs:
             - name: personal-website-version-bump
@@ -134,14 +107,6 @@ jobs:
           run:
             path: concourse-pipelines-repo/personal_website/deploy_to_k8s.sh
 
-    on_success:
-      put: notify-mattermost
-      params:
-        icon_url: ((concourse-logo-url))
-        text: ((success_text))
-
-    on_failure:
-      put: notify-mattermost
-      params:
-        icon_url: ((concourse-logo-url))
-        text: ((failed_text))
+    on_success: *notify-success
+    on_error: *notify-failure
+    on_failure: *notify-failure
