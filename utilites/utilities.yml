@@ -33,9 +33,10 @@ jobs:
   - name: build-and-push-bitwarden-cli-image
     serial: true
     plan:
-      - get: bitwarden-cli-github-release
-        trigger: true
-      - get: concourse-pipelines-repo
+      - in_parallel:
+        - get: bitwarden-cli-github-release
+          trigger: true
+        - get: concourse-pipelines-repo
 
       - task: build-image
         privileged: true

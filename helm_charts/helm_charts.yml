@@ -1,0 +1,147 @@
+resource_types:
+  - *mattermost-resouce-type
+
+resources:
+  - *mattermost-resource
+
+  - name: k8s-homelab-helm-repo-get
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/k8s-homelab.git
+      branch: gh-pages
+
+  - name: concourse-pipelines-repo
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/concourse-pipelines.git
+      branch: master
+
+  # syncthing
+  - name: syncthing-helm-charts
+    type: helm-chart
+    icon: ship-wheel
+    source:
+      uri: https://flipenergy.github.io/k8s-homelab/
+      chart: syncthing
+
+  - name: syncthing-docker-repo
+    type: registry-image
+    icon: docker
+    source:
+      repository: syncthing/syncthing
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
+
+  - name: syncthing-helm-chart-repo
+    type: git
+    icon: github
+    source:
+      uri: git@github.com:FlipEnergy/syncthing-helm-chart.git
+      branch: master
+
+jobs:
+  - name: syncthing-version-bump
+    serial: true
+    plan:
+      - in_parallel:
+        - get: syncthing-docker-repo
+          trigger: true
+          params:
+            skip_download: true
+        - get: syncthing-helm-charts
+        - get: syncthing-helm-chart-repo
+        - get: k8s-homelab-helm-repo-get
+        - get: concourse-pipelines-repo
+
+      - task: bump-versions
+        config: 
+          platform: linux
+          image_resource: *yq-image-resource
+
+          inputs:
+            - name: syncthing-helm-charts
+            - name: syncthing-docker-repo
+            - name: syncthing-helm-chart-repo
+
+          outputs:
+            - name: syncthing-helm-chart-repo
+
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                yq eval ".appVersion = $(cat syncthing-docker-repo/tag)" -i syncthing-helm-chart-repo/syncthing/Chart.yaml
+                # TODO Fix version bump
+                yq eval ".version = $(cat syncthing-helm-charts/tag)" -i syncthing-helm-chart-repo/syncthing/Chart.yaml
+
+      - task: git-commit
+        config: 
+          platform: linux
+          image_resource: *git-image-resource
+
+          inputs:
+            - name: syncthing-docker-repo
+            - name: syncthing-helm-chart-repo
+            - name: concourse-pipelines-repo
+
+          outputs:
+            - name: syncthing-helm-chart-repo
+
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                ../concourse-pipelines-repo/common/scripts/setup_and_git_add.sh
+                git commit -m "syncthing version $(cat syncthing-docker-repo/tag)"
+
+            dir: syncthing-helm-chart-repo
+
+      - put: syncthing-helm-chart-repo
+        params:
+          repository: syncthing-helm-chart-repo
+
+    on_error: *notify-failure
+    on_failure: *notify-failure
+  
+  - name: syncthing-add-to-helm-repo
+    serial: true
+    plan:
+      - in_parallel:
+        - get: syncthing-helm-chart-repo
+          trigger: true
+          passed: [syncthing-version-bump]
+        - get: k8s-homelab-helm-repo-get
+
+      - task: helm-package
+        config: 
+          platform: linux
+          image_resource: *yq-image-resource
+
+          inputs:
+            - name: syncthing-helm-chart-repo
+            - name: k8s-homelab-helm-repo-get
+
+          outputs:
+            - name: k8s-homelab-helm-repo-get
+
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                helm package syncthing-helm-chart-repo/syncthing
+
+
+
+      - put: docker-hub-repo
+        params:
+          image: image/image.tar
+          additional_tags: bitwarden-cli-github-release/version
+
+    on_success: *notify-success
+    on_error: *notify-failure
+    on_failure: *notify-failure

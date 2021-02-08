@@ -61,15 +61,19 @@ jobs:
           image: image/image.tar
           additional_tags: personal-website-version-bump/version
 
+    on_error: *notify-failure
+    on_failure: *notify-failure
+
   - name: deploy-website-to-k8s
     serial: true
     plan:
-      - get: personal-website-version-bump
-        passed: [build-and-push-release-image]
-      - get: docker-hub-repo
-        trigger: true
-        passed: [build-and-push-release-image]
-      - get: concourse-pipelines-repo
+      - in_parallel:
+        - get: personal-website-version-bump
+          passed: [build-and-push-release-image]
+        - get: docker-hub-repo
+          trigger: true
+          passed: [build-and-push-release-image]
+        - get: concourse-pipelines-repo
 
       - task: get-secret-key
         config:
@@ -97,7 +101,7 @@ jobs:
       - task: deploy-to-k8s
         config:
           platform: linux
-          image_resource: *helmsman-deploy-image-resource
+          image_resource: *helmsman-image-resource
 
           inputs:
             - name: personal-website-version-bump

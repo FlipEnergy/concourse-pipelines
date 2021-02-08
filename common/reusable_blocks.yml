@@ -28,15 +28,39 @@ oci-build-image-resource: &oci-build-image-resource
   type: registry-image
   source:
     repository: vito/oci-build-task
-    tag: ((oci_build_task_tag))
+    tag: ((oci_build_task__image_tag))
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 
-helmsman-deploy-image-resource: &helmsman-deploy-image-resource
+helmsman-image-resource: &helmsman-image-resource
   type: registry-image
   source:
     repository: praqma/helmsman
-    tag: ((helmsman_tag))
+    tag: ((helmsman_image_tag))
+    username: ((docker_hub_username))
+    password: ((docker_hub_password))
+
+yq-image-resource: &yq-image-resource
+  type: registry-image
+  source:
+    repository: mikefarah/yq
+    tag: ((yq_image_tag))
+    username: ((docker_hub_username))
+    password: ((docker_hub_password))
+
+git-image-resource: &git-image-resource
+  type: registry-image
+  source:
+    repository: alpine/git
+    tag: ((alpine_git_tag))
+    username: ((docker_hub_username))
+    password: ((docker_hub_password))
+
+helm-image-resource: &helm-image-resource
+  type: registry-image
+  source:
+    repository: alpine/helm
+    tag: ((alpine_helm_tag))
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 

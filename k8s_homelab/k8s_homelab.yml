@@ -40,9 +40,10 @@ jobs:
   - name: deploy-k8s-homelab
     serial: true
     plan:
-      - get: k8s-homelab-repo
-        trigger: true
-      - get: concourse-pipelines-repo
+      - in_parallel:
+        - get: k8s-homelab-repo
+          trigger: true
+        - get: concourse-pipelines-repo
 
       - task: get-secret-key
         config:
@@ -68,7 +69,7 @@ jobs:
       - task: deploy-homelab-k8s
         config: 
           platform: linux
-          image_resource: *helmsman-deploy-image-resource
+          image_resource: *helmsman-image-resource
 
           inputs:
             - name: k8s-homelab-repo
@@ -86,19 +87,15 @@ jobs:
   - name: helm-index-and-push
     serial: true
     plan:
-      - get: k8s-homelab-helm-repo-get
-        trigger: true
+      - in_parallel:
+        - get: k8s-homelab-helm-repo-get
+          trigger: true
+        - get: concourse-pipelines-repo
 
       - task: helm-index
         config:
           platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: alpine/helm
-              tag: ((alpine_helm_tag))
-              username: ((docker_hub_username))
-              password: ((docker_hub_password))
+          image_resource: *helm-image-resource
 
           inputs:
             - name: k8s-homelab-helm-repo-get
@@ -119,16 +116,11 @@ jobs:
       - task: git-commit
         config:
           platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: alpine/git
-              tag: ((alpine_git_tag))
-              username: ((docker_hub_username))
-              password: ((docker_hub_password))
+          image_resource: *git-image-resource
 
           inputs:
             - name: k8s-homelab-helm-repo-get
+            - name: concourse-pipelines-repo
 
           outputs:
             - name: k8s-homelab-helm-repo-get
@@ -138,16 +130,9 @@ jobs:
             args:
               - -c
               - |
-                #!/bin/bash
-
-                git config user.email "dennis.zhang.nrg@gmail.com"
-                git config user.name "Concourse Worker"
-
-                git --no-pager diff
-
-                git add .
-
+                ../concourse-pipelines-repo/common/scripts/setup_and_git_add.sh
                 git commit -m "update index.yaml"
+
             dir: k8s-homelab-helm-repo-get
 
       - put: k8s-homelab-helm-repo-put
