@@ -181,7 +181,6 @@ jobs:
           trigger: true
           passed: [archivy-version-bump]
         - get: k8s-homelab-helm-repo
-          passed: [archivy-version-bump]
         - get: concourse-pipelines-repo
           passed: [archivy-version-bump]
 
@@ -302,7 +301,6 @@ jobs:
           trigger: true
           passed: [owncast-version-bump]
         - get: k8s-homelab-helm-repo
-          passed: [owncast-version-bump]
         - get: concourse-pipelines-repo
           passed: [owncast-version-bump]
 
@@ -423,7 +421,6 @@ jobs:
           trigger: true
           passed: [syncthing-version-bump]
         - get: k8s-homelab-helm-repo
-          passed: [syncthing-version-bump]
         - get: concourse-pipelines-repo
           passed: [syncthing-version-bump]
 
@@ -544,7 +541,6 @@ jobs:
           trigger: true
           passed: [whoogle-version-bump]
         - get: k8s-homelab-helm-repo
-          passed: [whoogle-version-bump]
         - get: concourse-pipelines-repo
           passed: [whoogle-version-bump]
 
@@ -665,7 +661,6 @@ jobs:
           trigger: true
           passed: [xyzzy-version-bump]
         - get: k8s-homelab-helm-repo
-          passed: [xyzzy-version-bump]
         - get: concourse-pipelines-repo
           passed: [xyzzy-version-bump]
 
@@ -684,7 +679,7 @@ jobs:
 
           params:
             CHART_REPO_INPUT: xyzzy-helm-chart-repo
-            CHART_NAME: xyzzy
+            CHART_NAME: pretend-youre-xyzzy
 
           run:
             path: concourse-pipelines-repo/helm_charts/helm_pkg_and_move.sh
