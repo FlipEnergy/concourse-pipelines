@@ -48,8 +48,7 @@ resources:
       tag: latest
 
 jobs:
-## Release image build and push job
-  - name: build-and-push-bitwarden-cli-image
+  - name: bitwarden-cli-image
     serial: true
     plan:
       - in_parallel:
@@ -91,7 +90,7 @@ jobs:
     on_error: *notify-failure
     on_failure: *notify-failure
 
-  - name: build-and-push-yq-ubuntu-image
+  - name: yq-ubuntu-image
     serial: true
     plan:
       - in_parallel:

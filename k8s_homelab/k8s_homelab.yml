@@ -137,7 +137,7 @@ jobs:
               - -ec
               - |
                 ../concourse-pipelines-repo/common/scripts/setup_and_git_add.sh
-                git commit -m "update index.yaml"
+                git commit -m "CONCOURSE: update index.yaml"
 
             dir: k8s-homelab-helm-repo-get
 

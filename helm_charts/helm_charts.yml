@@ -91,7 +91,7 @@ jobs:
               - -ec
               - |
                 ../concourse-pipelines-repo/common/scripts/setup_and_git_add.sh
-                git commit -m "syncthing version $(cat syncthing-image/tag)"
+                git commit -m "CONCOURSE: syncthing version $(cat ../syncthing-image/tag)"
 
             dir: syncthing-helm-chart-repo
 
@@ -110,6 +110,9 @@ jobs:
           trigger: true
           passed: [syncthing-version-bump]
         - get: k8s-homelab-helm-repo
+          passed: [syncthing-version-bump]
+        - get: concourse-pipelines-repo
+          passed: [syncthing-version-bump]
 
       - task: helm-package
         config: 
@@ -119,6 +122,7 @@ jobs:
           inputs:
             - name: syncthing-helm-chart-repo
             - name: k8s-homelab-helm-repo
+            - name: concourse-pipelines-repo
 
           outputs:
             - name: k8s-homelab-helm-repo
@@ -128,7 +132,7 @@ jobs:
             CHART_NAME: syncthing
 
           run:
-            path: helm_charts/helm_pkg_and_move.sh
+            path: concourse-pipelines-repo/helm_charts/helm_pkg_and_move.sh
 
       - task: git-commit
         config: 
@@ -137,6 +141,7 @@ jobs:
 
           inputs:
             - name: k8s-homelab-helm-repo
+            - name: concourse-pipelines-repo
 
           outputs:
             - name: k8s-homelab-helm-repo
@@ -147,7 +152,7 @@ jobs:
               - -ec
               - |
                 ../concourse-pipelines-repo/common/scripts/setup_and_git_add.sh
-                git commit -m "$(cat git_commit_msg)"
+                git commit -m "CONCOURSE: $(cat git_commit_msg)"
 
             dir: k8s-homelab-helm-repo
 
