@@ -128,7 +128,7 @@ jobs:
           run:
             path: sh
             args:
-              - -c
+              - -ec
               - |
                 ../concourse-pipelines-repo/common/scripts/setup_and_git_add.sh
                 git commit -m "update index.yaml"

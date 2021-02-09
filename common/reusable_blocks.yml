@@ -69,12 +69,12 @@ notify-success: &notify-success
   put: notify-mattermost
   params:
     icon_url: ((concourse-logo-url))
-    text: ((success_text))
+    text: ((mattermost_notify_success_text))
 
 notify-failure: &notify-failure
   put: notify-mattermost
   params:
     icon_url: ((concourse-logo-url))
-    text: ((failed_text))
+    text: ((mattermost_notify_failed_text))
 
 # end reusable blocks

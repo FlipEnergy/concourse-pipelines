@@ -4,7 +4,7 @@ resource_types:
 resources:
   - *mattermost-resource
 
-  - name: k8s-homelab-helm-repo-get
+  - name: k8s-homelab-helm-repo
     type: git
     icon: github
     source:
@@ -19,13 +19,6 @@ resources:
       branch: master
 
   # syncthing
-  - name: syncthing-helm-charts
-    type: helm-chart
-    icon: ship-wheel
-    source:
-      uri: https://flipenergy.github.io/k8s-homelab/
-      chart: syncthing
-
   - name: syncthing-docker-repo
     type: registry-image
     icon: docker
@@ -38,8 +31,8 @@ resources:
     type: git
     icon: github
     source:
-      uri: git@github.com:FlipEnergy/syncthing-helm-chart.git
-      branch: master
+      uri: https://github.com/FlipEnergy/syncthing-helm-chart.git
+      branch: main
 
 jobs:
   - name: syncthing-version-bump
@@ -50,9 +43,8 @@ jobs:
           trigger: true
           params:
             skip_download: true
-        - get: syncthing-helm-charts
         - get: syncthing-helm-chart-repo
-        - get: k8s-homelab-helm-repo-get
+        - get: k8s-homelab-helm-repo
         - get: concourse-pipelines-repo
 
       - task: bump-versions
@@ -61,9 +53,8 @@ jobs:
           image_resource: *yq-image-resource
 
           inputs:
-            - name: syncthing-helm-charts
             - name: syncthing-docker-repo
-            - name: syncthing-helm-chart-repo
+            - name: concourse-pipelines-repo
 
           outputs:
             - name: syncthing-helm-chart-repo
@@ -71,11 +62,13 @@ jobs:
           run:
             path: sh
             args:
-              - -c
+              - -ec
               - |
-                yq eval ".appVersion = $(cat syncthing-docker-repo/tag)" -i syncthing-helm-chart-repo/syncthing/Chart.yaml
-                # TODO Fix version bump
-                yq eval ".version = $(cat syncthing-helm-charts/tag)" -i syncthing-helm-chart-repo/syncthing/Chart.yaml
+                chart_file=syncthing-helm-chart-repo/syncthing/Chart.yaml
+                yq eval ".appVersion = $(cat syncthing-docker-repo/tag)" -i ${chart_file}
+                
+                current_version=$(yq eval ".version" ${chart_file})
+                yq eval ".version = $(concourse-pipelines-repo/common/scripts/bump_semver.sh ${current_version} patch)" -i ${chart_file}
 
       - task: git-commit
         config: 
@@ -93,7 +86,7 @@ jobs:
           run:
             path: sh
             args:
-              - -c
+              - -ec
               - |
                 ../concourse-pipelines-repo/common/scripts/setup_and_git_add.sh
                 git commit -m "syncthing version $(cat syncthing-docker-repo/tag)"
@@ -114,33 +107,55 @@ jobs:
         - get: syncthing-helm-chart-repo
           trigger: true
           passed: [syncthing-version-bump]
-        - get: k8s-homelab-helm-repo-get
+        - get: k8s-homelab-helm-repo
 
       - task: helm-package
         config: 
           platform: linux
-          image_resource: *yq-image-resource
+          image_resource: *helm-image-resource
 
           inputs:
             - name: syncthing-helm-chart-repo
-            - name: k8s-homelab-helm-repo-get
+            - name: k8s-homelab-helm-repo
 
           outputs:
-            - name: k8s-homelab-helm-repo-get
+            - name: k8s-homelab-helm-repo
 
           run:
             path: sh
             args:
-              - -c
+              - -ec
               - |
                 helm package syncthing-helm-chart-repo/syncthing
 
+                chart_version=$(ls -1 k8s-homelab-helm-repo/charts | head -n 1)
+                echo ${chart_version} > k8s-homelab-helm-repo/git_commit_msg
+                mv -vf syncthing-*.tgz k8s-homelab-helm-repo/charts
 
+      - task: git-commit
+        config: 
+          platform: linux
+          image_resource: *git-image-resource
 
-      - put: docker-hub-repo
+          inputs:
+            - name: k8s-homelab-helm-repo
+
+          outputs:
+            - name: k8s-homelab-helm-repo
+
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                ../concourse-pipelines-repo/common/scripts/setup_and_git_add.sh
+                git commit -m "$(cat git_commit_msg)"
+
+            dir: syncthing-helm-chart-repo
+
+      - put: k8s-homelab-helm-repo
         params:
-          image: image/image.tar
-          additional_tags: bitwarden-cli-github-release/version
+          repository: k8s-homelab-helm-repo
 
     on_success: *notify-success
     on_error: *notify-failure
