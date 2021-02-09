@@ -10,6 +10,8 @@ resources:
     source:
       uri: https://github.com/FlipEnergy/k8s-homelab.git
       branch: master
+      username: ((github_username))
+      password: ((github_password))
 
   - name: concourse-pipelines-repo
     type: git
@@ -17,6 +19,8 @@ resources:
     source:
       uri: https://github.com/FlipEnergy/concourse-pipelines.git
       branch: master
+      username: ((github_username))
+      password: ((github_password))
 
   - name: k8s-homelab-helm-repo-get
     type: git
@@ -24,6 +28,8 @@ resources:
     source:
       uri: https://github.com/FlipEnergy/k8s-homelab.git
       branch: gh-pages
+      username: ((github_username))
+      password: ((github_password))
       paths:
         - charts
 

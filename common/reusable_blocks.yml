@@ -4,7 +4,16 @@ mattermost-resouce-type: &mattermost-resouce-type
   type: registry-image
   source:
     repository: cfcommunity/slack-notification-resource
-    tag: ((slack-notification-resource-tag))
+    tag: 1.6.0
+    username: ((docker_hub_username))
+    password: ((docker_hub_password))
+
+my-registry-image-resource-type: &my-registry-image-resource-type
+  name: my-registry-image
+  type: registry-image
+  source:
+    repository: concourse/registry-image-resource
+    tag: 1.1.0
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 
@@ -20,15 +29,7 @@ mattermost-resource: &mattermost-resource
 bitwarden-cli-image-resource: &bitwarden-cli-image-resource
   type: registry-image
   source:
-    repository: flipenergy/bitwarden_cli
-    username: ((docker_hub_username))
-    password: ((docker_hub_password))
-
-oci-build-image-resource: &oci-build-image-resource
-  type: registry-image
-  source:
-    repository: vito/oci-build-task
-    tag: ((oci_build_task__image_tag))
+    repository: flipenergy/bitwarden-cli
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 
@@ -36,23 +37,7 @@ helmsman-image-resource: &helmsman-image-resource
   type: registry-image
   source:
     repository: praqma/helmsman
-    tag: ((helmsman_image_tag))
-    username: ((docker_hub_username))
-    password: ((docker_hub_password))
-
-yq-image-resource: &yq-image-resource
-  type: registry-image
-  source:
-    repository: mikefarah/yq
-    tag: ((yq_image_tag))
-    username: ((docker_hub_username))
-    password: ((docker_hub_password))
-
-git-image-resource: &git-image-resource
-  type: registry-image
-  source:
-    repository: alpine/git
-    tag: ((alpine_git_tag))
+    tag: v3.6.3
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 
@@ -60,21 +45,46 @@ helm-image-resource: &helm-image-resource
   type: registry-image
   source:
     repository: alpine/helm
-    tag: ((alpine_helm_tag))
+    tag: 3.4.1
     username: ((docker_hub_username))
     password: ((docker_hub_password))
+
+git-image-resource: &git-image-resource
+  type: registry-image
+  source:
+    repository: alpine/git
+    tag: 1.0.22
+    username: ((docker_hub_username))
+    password: ((docker_hub_password))
+
+oci-build-image-resource: &oci-build-image-resource
+  type: registry-image
+  source:
+    repository: vito/oci-build-task
+    tag: 0.7.0
+    username: ((docker_hub_username))
+    password: ((docker_hub_password))
+
+yq-image-resource: &yq-image-resource
+  type: registry-image
+  source:
+    repository: flipenergy/yq-ubuntu
+    tag: 4.5.0
+    username: ((docker_hub_username))
+    password: ((docker_hub_password))
+
 
 # notifications
 notify-success: &notify-success
   put: notify-mattermost
   params:
-    icon_url: ((concourse-logo-url))
-    text: ((mattermost_notify_success_text))
+    icon_url: https://raw.githubusercontent.com/concourse/brand/master/concourse_logo/concourse_logo_blue_square.png
+    text: ':white_check_mark: [SUCCESS: $BUILD_JOB_NAME #$BUILD_NAME]($ATC_EXTERNAL_URL/builds/$BUILD_ID)'
 
 notify-failure: &notify-failure
   put: notify-mattermost
   params:
-    icon_url: ((concourse-logo-url))
-    text: ((mattermost_notify_failed_text))
+    icon_url: https://raw.githubusercontent.com/concourse/brand/master/concourse_logo/concourse_logo_blue_square.png
+    text: ':x: [FAILED: $BUILD_JOB_NAME #$BUILD_NAME]($ATC_EXTERNAL_URL/builds/$BUILD_ID)'
 
 # end reusable blocks

@@ -4,19 +4,14 @@ resource_types:
 resources:
   - *mattermost-resource
 
-  - name: bitwarden-cli-github-release
-    type: github-release
-    icon: github
-    source:
-      owner: bitwarden
-      repository: cli
-
   - name: concourse-pipelines-repo
     type: git
     icon: github
     source:
       uri: https://github.com/FlipEnergy/concourse-pipelines.git
       branch: master
+      username: ((github_username))
+      password: ((github_password))
 
   # Where we will push the image to
   - name: docker-hub-repo
@@ -28,6 +23,22 @@ resources:
       password: ((docker_hub_password))
       tag: latest
 
+  - name: bitwarden-cli-github-release
+    type: github-release
+    icon: github
+    source:
+      owner: bitwarden
+      repository: cli
+      access_token: ((github_password))
+
+  - name: yq-github-release
+    type: github-release
+    icon: github
+    source:
+      owner: mikefarah
+      repository: yq
+      access_token: ((github_password))
+
 jobs:
 ## Release image build and push job
   - name: build-and-push-bitwarden-cli-image
@@ -36,6 +47,9 @@ jobs:
       - in_parallel:
         - get: bitwarden-cli-github-release
           trigger: true
+          params:
+            globs:
+              - none
         - get: concourse-pipelines-repo
 
       - task: build-image
@@ -63,6 +77,47 @@ jobs:
         params:
           image: image/image.tar
           additional_tags: bitwarden-cli-github-release/version
+
+    on_success: *notify-success
+    on_error: *notify-failure
+    on_failure: *notify-failure
+
+  - name: build-and-push-yq-ubuntu-image
+    serial: true
+    plan:
+      - in_parallel:
+        - get: yq-github-release
+          trigger: true
+          params:
+            globs:
+              - none
+        - get: concourse-pipelines-repo
+
+      - task: build-image
+        privileged: true
+        config: 
+          platform: linux
+          image_resource: *oci-build-image-resource
+
+          inputs:
+            - name: yq-github-release
+            - name: concourse-pipelines-repo
+
+          outputs:
+            - name: image
+
+          params:
+            CONTEXT: concourse-pipelines-repo/utilites/yq_ubuntu
+          run:
+            path: sh
+            args:
+              - -c
+              - BUILD_ARGS_VERSION=$(cat yq-github-release/version) build
+
+      - put: docker-hub-repo
+        params:
+          image: image/image.tar
+          additional_tags: yq-github-release/version
 
     on_success: *notify-success
     on_error: *notify-failure

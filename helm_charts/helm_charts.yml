@@ -1,5 +1,6 @@
 resource_types:
   - *mattermost-resouce-type
+  - *my-registry-image-resource-type  
 
 resources:
   - *mattermost-resource
@@ -10,6 +11,8 @@ resources:
     source:
       uri: https://github.com/FlipEnergy/k8s-homelab.git
       branch: gh-pages
+      username: ((github_username))
+      password: ((github_password))
 
   - name: concourse-pipelines-repo
     type: git
@@ -17,10 +20,12 @@ resources:
     source:
       uri: https://github.com/FlipEnergy/concourse-pipelines.git
       branch: master
+      username: ((github_username))
+      password: ((github_password))
 
   # syncthing
-  - name: syncthing-docker-repo
-    type: registry-image
+  - name: syncthing-image
+    type: my-registry-image
     icon: docker
     source:
       repository: syncthing/syncthing
@@ -33,16 +38,16 @@ resources:
     source:
       uri: https://github.com/FlipEnergy/syncthing-helm-chart.git
       branch: main
+      username: ((github_username))
+      password: ((github_password))
 
 jobs:
   - name: syncthing-version-bump
     serial: true
     plan:
       - in_parallel:
-        - get: syncthing-docker-repo
+        - get: syncthing-image
           trigger: true
-          params:
-            skip_download: true
         - get: syncthing-helm-chart-repo
         - get: k8s-homelab-helm-repo
         - get: concourse-pipelines-repo
@@ -53,7 +58,8 @@ jobs:
           image_resource: *yq-image-resource
 
           inputs:
-            - name: syncthing-docker-repo
+            - name: syncthing-image
+            - name: syncthing-helm-chart-repo
             - name: concourse-pipelines-repo
 
           outputs:
@@ -65,10 +71,18 @@ jobs:
               - -ec
               - |
                 chart_file=syncthing-helm-chart-repo/syncthing/Chart.yaml
-                yq eval ".appVersion = $(cat syncthing-docker-repo/tag)" -i ${chart_file}
+                app_version=$(cat syncthing-image/tag)
+
+                echo "updating appVersion..."
+
+                yq eval ".appVersion = \"${app_version}\"" -i ${chart_file}
                 
+                echo "getting current chart version..."
                 current_version=$(yq eval ".version" ${chart_file})
-                yq eval ".version = $(concourse-pipelines-repo/common/scripts/bump_semver.sh ${current_version} patch)" -i ${chart_file}
+
+                echo "updating chart version"
+                new_chart_version=$(concourse-pipelines-repo/common/scripts/bump_semver.sh ${current_version} patch)
+                yq eval ".version = \"${new_chart_version}\"" -i ${chart_file}
 
       - task: git-commit
         config: 
@@ -76,7 +90,7 @@ jobs:
           image_resource: *git-image-resource
 
           inputs:
-            - name: syncthing-docker-repo
+            - name: syncthing-image
             - name: syncthing-helm-chart-repo
             - name: concourse-pipelines-repo
 
@@ -89,7 +103,7 @@ jobs:
               - -ec
               - |
                 ../concourse-pipelines-repo/common/scripts/setup_and_git_add.sh
-                git commit -m "syncthing version $(cat syncthing-docker-repo/tag)"
+                git commit -m "syncthing version $(cat syncthing-image/tag)"
 
             dir: syncthing-helm-chart-repo
 

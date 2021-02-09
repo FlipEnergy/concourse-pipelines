@@ -11,6 +11,8 @@ resources:
     source:
       uri: https://github.com/FlipEnergy/personal-website.git
       branch: master
+      username: ((github_username))
+      password: ((github_password))
       paths:
         - version
 
@@ -20,6 +22,8 @@ resources:
     source:
       uri: https://github.com/FlipEnergy/concourse-pipelines.git
       branch: master
+      username: ((github_username))
+      password: ((github_password))
 
   # Where we will push the image to
   - name: docker-hub-repo
