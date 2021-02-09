@@ -65,24 +65,12 @@ jobs:
           outputs:
             - name: syncthing-helm-chart-repo
 
+          params:
+            CHART_FILE: syncthing-helm-chart-repo/syncthing/Chart.yaml
+            IMAGE_INPUT: syncthing-image
+
           run:
-            path: sh
-            args:
-              - -ec
-              - |
-                chart_file=syncthing-helm-chart-repo/syncthing/Chart.yaml
-                app_version=$(cat syncthing-image/tag)
-
-                echo "updating appVersion..."
-
-                yq eval ".appVersion = \"${app_version}\"" -i ${chart_file}
-                
-                echo "getting current chart version..."
-                current_version=$(yq eval ".version" ${chart_file})
-
-                echo "updating chart version"
-                new_chart_version=$(concourse-pipelines-repo/common/scripts/bump_semver.sh ${current_version} patch)
-                yq eval ".version = \"${new_chart_version}\"" -i ${chart_file}
+            path: concourse-pipelines-repo/helm_charts/bump_versions.sh
 
       - task: git-commit
         config: 
@@ -135,16 +123,12 @@ jobs:
           outputs:
             - name: k8s-homelab-helm-repo
 
-          run:
-            path: sh
-            args:
-              - -ec
-              - |
-                helm package syncthing-helm-chart-repo/syncthing
+          params:
+            CHART_REPO_INPUT: syncthing-helm-chart-repo
+            CHART_NAME: syncthing
 
-                chart_version=$(ls -1 k8s-homelab-helm-repo/charts | head -n 1)
-                echo ${chart_version} > k8s-homelab-helm-repo/git_commit_msg
-                mv -vf syncthing-*.tgz k8s-homelab-helm-repo/charts
+          run:
+            path: helm_charts/helm_pkg_and_move.sh
 
       - task: git-commit
         config: 
@@ -165,7 +149,7 @@ jobs:
                 ../concourse-pipelines-repo/common/scripts/setup_and_git_add.sh
                 git commit -m "$(cat git_commit_msg)"
 
-            dir: syncthing-helm-chart-repo
+            dir: k8s-homelab-helm-repo
 
       - put: k8s-homelab-helm-repo
         params:
