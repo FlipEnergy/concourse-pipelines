@@ -75,11 +75,12 @@ jobs:
 
           params:
             CONTEXT: concourse-pipelines-repo/utilites/bitwarden-cli
+            BUILD_ARGS_FILE: build_args_file
           run:
             path: sh
             args:
-              - -c
-              - BUILD_ARGS_VERSION=$(cat bitwarden-cli-github-release/version) build
+              - -ec
+              - echo VERSION=$(cat bitwarden-cli-github-release/version) > build_args_file && build
 
       - put: bitwarden-cli-docker-repo
         params:
@@ -116,11 +117,13 @@ jobs:
 
           params:
             CONTEXT: concourse-pipelines-repo/utilites/yq-ubuntu
+            BUILD_ARGS_FILE: build_args_file
+
           run:
             path: sh
             args:
-              - -c
-              - BUILD_ARGS_VERSION=$(cat yq-github-release/version) build
+              - -ec
+              - echo VERSION=$(cat yq-github-release/version) > build_args_file && build
 
       - put: yq-ubuntu-docker-repo
         params:
