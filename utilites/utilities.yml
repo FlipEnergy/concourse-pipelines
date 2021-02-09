@@ -13,16 +13,6 @@ resources:
       username: ((github_username))
       password: ((github_password))
 
-  # Where we will push the image to
-  - name: docker-hub-repo
-    type: registry-image
-    icon: docker
-    source:
-      repository: flipenergy/bitwarden_cli
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
-      tag: latest
-
   - name: bitwarden-cli-github-release
     type: github-release
     icon: github
@@ -31,6 +21,15 @@ resources:
       repository: cli
       access_token: ((github_password))
 
+  - name: bitwarden-cli-docker-repo
+    type: registry-image
+    icon: docker
+    source:
+      repository: flipenergy/bitwarden-cli
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
+      tag: latest
+
   - name: yq-github-release
     type: github-release
     icon: github
@@ -38,6 +37,15 @@ resources:
       owner: mikefarah
       repository: yq
       access_token: ((github_password))
+
+  - name: yq-ubuntu-docker-repo
+    type: registry-image
+    icon: docker
+    source:
+      repository: flipenergy/yq-ubuntu
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
+      tag: latest
 
 jobs:
 ## Release image build and push job
@@ -66,14 +74,14 @@ jobs:
             - name: image
 
           params:
-            CONTEXT: concourse-pipelines-repo/utilites/bitwarden_cli
+            CONTEXT: concourse-pipelines-repo/utilites/bitwarden-cli
           run:
             path: sh
             args:
               - -c
               - BUILD_ARGS_VERSION=$(cat bitwarden-cli-github-release/version) build
 
-      - put: docker-hub-repo
+      - put: bitwarden-cli-docker-repo
         params:
           image: image/image.tar
           additional_tags: bitwarden-cli-github-release/version
@@ -107,14 +115,14 @@ jobs:
             - name: image
 
           params:
-            CONTEXT: concourse-pipelines-repo/utilites/yq_ubuntu
+            CONTEXT: concourse-pipelines-repo/utilites/yq-ubuntu
           run:
             path: sh
             args:
               - -c
               - BUILD_ARGS_VERSION=$(cat yq-github-release/version) build
 
-      - put: docker-hub-repo
+      - put: yq-ubuntu-docker-repo
         params:
           image: image/image.tar
           additional_tags: yq-github-release/version
