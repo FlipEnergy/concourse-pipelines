@@ -138,7 +138,7 @@ jobs:
             - name: archivy-helm-chart-repo
 
           params:
-            CHART_FILE: archivy-helm-chart-repo/archivy/Chart.yaml
+            CHART_FILE: archivy-helm-chart-repo/Chart.yaml
             IMAGE_INPUT: archivy-image
 
           run:
@@ -258,7 +258,7 @@ jobs:
             - name: owncast-helm-chart-repo
 
           params:
-            CHART_FILE: owncast-helm-chart-repo/owncast/Chart.yaml
+            CHART_FILE: owncast-helm-chart-repo/Chart.yaml
             IMAGE_INPUT: owncast-image
 
           run:
@@ -378,7 +378,7 @@ jobs:
             - name: syncthing-helm-chart-repo
 
           params:
-            CHART_FILE: syncthing-helm-chart-repo/syncthing/Chart.yaml
+            CHART_FILE: syncthing-helm-chart-repo/Chart.yaml
             IMAGE_INPUT: syncthing-image
 
           run:
@@ -498,7 +498,7 @@ jobs:
             - name: whoogle-helm-chart-repo
 
           params:
-            CHART_FILE: whoogle-helm-chart-repo/whoogle/Chart.yaml
+            CHART_FILE: whoogle-helm-chart-repo/Chart.yaml
             IMAGE_INPUT: whoogle-image
 
           run:
@@ -618,7 +618,7 @@ jobs:
             - name: xyzzy-helm-chart-repo
 
           params:
-            CHART_FILE: xyzzy-helm-chart-repo/pretend-youre-xyzzy/Chart.yaml
+            CHART_FILE: xyzzy-helm-chart-repo/Chart.yaml
             IMAGE_INPUT: xyzzy-image
 
           run:

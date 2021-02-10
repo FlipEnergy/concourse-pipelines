@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 echo 'Packaging...'
-helm package ${CHART_REPO_INPUT}/${CHART_NAME}
+helm package ${CHART_REPO_INPUT}
 
 echo 'Writing commit message...'
 chart_version=$(ls -1t ${CHART_NAME}-*.tgz | head -n 1)
