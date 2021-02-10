@@ -69,7 +69,6 @@ yq-image-resource: &yq-image-resource
   type: registry-image
   source:
     repository: flipenergy/yq-ubuntu
-    tag: 4.5.0
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 
