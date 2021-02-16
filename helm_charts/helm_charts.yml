@@ -171,6 +171,7 @@ jobs:
         params:
           repository: archivy-helm-chart-repo
 
+    on_success: *notify-success
     on_error: *notify-failure
     on_failure: *notify-failure
   - name: archivy-add-to-helm-repo
@@ -291,6 +292,7 @@ jobs:
         params:
           repository: owncast-helm-chart-repo
 
+    on_success: *notify-success
     on_error: *notify-failure
     on_failure: *notify-failure
   - name: owncast-add-to-helm-repo
@@ -411,6 +413,7 @@ jobs:
         params:
           repository: syncthing-helm-chart-repo
 
+    on_success: *notify-success
     on_error: *notify-failure
     on_failure: *notify-failure
   - name: syncthing-add-to-helm-repo
@@ -531,6 +534,7 @@ jobs:
         params:
           repository: whoogle-helm-chart-repo
 
+    on_success: *notify-success
     on_error: *notify-failure
     on_failure: *notify-failure
   - name: whoogle-add-to-helm-repo
@@ -651,6 +655,7 @@ jobs:
         params:
           repository: xyzzy-helm-chart-repo
 
+    on_success: *notify-success
     on_error: *notify-failure
     on_failure: *notify-failure
   - name: xyzzy-add-to-helm-repo
