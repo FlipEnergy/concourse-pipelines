@@ -36,8 +36,7 @@ resources:
       tag: latest
 
 jobs:
-## Release image build and push job
-  - name: build-and-push-release-image
+  - name: build-and-push-image
     serial: true
     plan:
       - get: personal-website-version-bump
@@ -73,10 +72,10 @@ jobs:
     plan:
       - in_parallel:
         - get: personal-website-version-bump
-          passed: [build-and-push-release-image]
+          passed: [build-and-push-image]
         - get: docker-hub-repo
           trigger: true
-          passed: [build-and-push-release-image]
+          passed: [build-and-push-image]
         - get: concourse-pipelines-repo
 
       - task: get-secret-key
