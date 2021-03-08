@@ -101,7 +101,6 @@ jobs:
     plan:
       - in_parallel:
         - get: owncast-image
-          trigger: true
         - get: owncast-helm-chart-repo
         - get: k8s-homelab-helm-repo
         - get: concourse-pipelines-repo
@@ -222,7 +221,6 @@ jobs:
     plan:
       - in_parallel:
         - get: syncthing-image
-          trigger: true
         - get: syncthing-helm-chart-repo
         - get: k8s-homelab-helm-repo
         - get: concourse-pipelines-repo
@@ -343,7 +341,6 @@ jobs:
     plan:
       - in_parallel:
         - get: whoogle-image
-          trigger: true
         - get: whoogle-helm-chart-repo
         - get: k8s-homelab-helm-repo
         - get: concourse-pipelines-repo
@@ -464,7 +461,6 @@ jobs:
     plan:
       - in_parallel:
         - get: xyzzy-image
-          trigger: true
         - get: xyzzy-helm-chart-repo
         - get: k8s-homelab-helm-repo
         - get: concourse-pipelines-repo
