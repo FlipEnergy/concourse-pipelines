@@ -1,6 +1,6 @@
 resource_types:
   - *mattermost-resouce-type
-  - *my-registry-image-resource-type  
+  - *my-registry-image-resource-type
 
 resources:
   - *mattermost-resource
