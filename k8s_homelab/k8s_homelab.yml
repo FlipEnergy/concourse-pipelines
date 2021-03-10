@@ -12,6 +12,10 @@ resources:
       branch: master
       username: ((github_username))
       password: ((github_password))
+      ignore_paths:
+        - Makefile
+        - README.md
+        - .gitignore
 
   - name: concourse-pipelines-repo
     type: git

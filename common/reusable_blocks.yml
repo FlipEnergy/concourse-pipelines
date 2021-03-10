@@ -37,7 +37,7 @@ helmsman-image-resource: &helmsman-image-resource
   type: registry-image
   source:
     repository: praqma/helmsman
-    tag: v3.6.4
+    tag: v3.6.5
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 
