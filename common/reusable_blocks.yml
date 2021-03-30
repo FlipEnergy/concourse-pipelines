@@ -1,10 +1,9 @@
 # resource types
-mattermost-resouce-type: &mattermost-resouce-type
-  name: mattermost-notification
+webhook-resource-type: &webhook-resource-type
+  name: webhook-resource-type
   type: registry-image
   source:
-    repository: cfcommunity/slack-notification-resource
-    tag: 1.6.0
+    repository: flavorjones/webhook-notification-resource
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 
@@ -18,12 +17,13 @@ my-registry-image-resource-type: &my-registry-image-resource-type
     password: ((docker_hub_password))
 
 # resources
-mattermost-resource: &mattermost-resource
-  name: notify-mattermost
-  type: mattermost-notification
-  icon: webhook
+discord: &discord
+  name: discord
+  type: webhook-resource-type
+  icon: bell
   source:
-    url: ((mattermost_webhook_url))
+      adapter: DiscordAdapter
+      url: ((discord_webhook_url))
 
 # task image resources
 bitwarden-cli-image-resource: &bitwarden-cli-image-resource
@@ -75,15 +75,14 @@ yq-image-resource: &yq-image-resource
 
 # notifications
 notify-success: &notify-success
-  put: notify-mattermost
+  put: discord
   params:
-    icon_url: https://raw.githubusercontent.com/concourse/brand/master/concourse_logo/concourse_logo_blue_square.png
-    text: ':white_check_mark: [SUCCESS: $BUILD_JOB_NAME #$BUILD_NAME]($ATC_EXTERNAL_URL/builds/$BUILD_ID)'
+    status: "succeeded"
+
 
 notify-failure: &notify-failure
-  put: notify-mattermost
+  put: discord
   params:
-    icon_url: https://raw.githubusercontent.com/concourse/brand/master/concourse_logo/concourse_logo_blue_square.png
-    text: ':x: [FAILED: $BUILD_JOB_NAME #$BUILD_NAME]($ATC_EXTERNAL_URL/builds/$BUILD_ID)'
+    status: "failed"
 
 # end reusable blocks

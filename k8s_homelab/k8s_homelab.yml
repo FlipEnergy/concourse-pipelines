@@ -1,8 +1,8 @@
 resource_types:
-  - *mattermost-resouce-type
+  - *webhook-resource-type
 
 resources:
-  - *mattermost-resource
+  - *discord
 
   - name: k8s-homelab-repo
     type: git

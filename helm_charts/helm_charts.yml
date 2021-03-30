@@ -1,9 +1,9 @@
 resource_types:
-  - *mattermost-resouce-type
+  - *webhook-resource-type
   - *my-registry-image-resource-type
 
 resources:
-  - *mattermost-resource
+  - *discord
 
   - name: k8s-homelab-helm-repo
     type: git
