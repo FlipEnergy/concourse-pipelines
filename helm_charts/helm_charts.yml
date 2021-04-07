@@ -23,24 +23,6 @@ resources:
       username: ((github_username))
       password: ((github_password))
 
-  # owncast
-  - name: owncast-image
-    type: my-registry-image
-    icon: docker
-    source:
-      repository: gabekangas/owncast
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
-
-  - name: owncast-helm-chart-repo
-    type: git
-    icon: github
-    source:
-      uri: https://github.com/FlipEnergy/owncast-helm-chart.git
-      branch: main
-      username: ((github_username))
-      password: ((github_password))
-
   # syncthing
   - name: syncthing-image
     type: my-registry-image
@@ -78,127 +60,6 @@ resources:
       password: ((github_password))
 
 jobs:
-  - name: owncast-version-bump
-    serial: true
-    plan:
-      - in_parallel:
-        - get: owncast-image
-          trigger: true
-        - get: owncast-helm-chart-repo
-        - get: k8s-homelab-helm-repo
-        - get: concourse-pipelines-repo
-
-      - task: bump-versions
-        config: 
-          platform: linux
-          image_resource: *yq-image-resource
-
-          inputs:
-            - name: owncast-image
-            - name: owncast-helm-chart-repo
-            - name: concourse-pipelines-repo
-
-          outputs:
-            - name: owncast-helm-chart-repo
-
-          params:
-            CHART_FILE: owncast-helm-chart-repo/Chart.yaml
-            IMAGE_INPUT: owncast-image
-
-          run:
-            path: concourse-pipelines-repo/helm_charts/bump_versions.sh
-
-      - task: git-commit
-        config: 
-          platform: linux
-          image_resource: *git-image-resource
-
-          inputs:
-            - name: owncast-image
-            - name: owncast-helm-chart-repo
-            - name: concourse-pipelines-repo
-
-          outputs:
-            - name: owncast-helm-chart-repo
-
-          run:
-            path: sh
-            args:
-              - -ec
-              - |
-                ../concourse-pipelines-repo/common/scripts/setup_and_git_add.sh
-                git commit -m "CONCOURSE: owncast version $(cat ../owncast-image/tag)"
-
-            dir: owncast-helm-chart-repo
-
-      - put: owncast-helm-chart-repo
-        params:
-          repository: owncast-helm-chart-repo
-
-    on_success: *notify-success
-    on_error: *notify-failure
-    on_failure: *notify-failure
-  - name: owncast-add-to-helm-repo
-    serial: true
-    plan:
-      - in_parallel:
-        - get: owncast-helm-chart-repo
-          trigger: true
-          passed: [owncast-version-bump]
-        - get: k8s-homelab-helm-repo
-        - get: concourse-pipelines-repo
-          passed: [owncast-version-bump]
-
-      - task: helm-package
-        config: 
-          platform: linux
-          image_resource: *helm-image-resource
-
-          inputs:
-            - name: owncast-helm-chart-repo
-            - name: k8s-homelab-helm-repo
-            - name: concourse-pipelines-repo
-
-          outputs:
-            - name: k8s-homelab-helm-repo
-
-          params:
-            CHART_REPO_INPUT: owncast-helm-chart-repo
-            CHART_NAME: owncast
-
-          run:
-            path: concourse-pipelines-repo/helm_charts/helm_pkg_and_move.sh
-
-      - task: git-commit
-        config: 
-          platform: linux
-          image_resource: *git-image-resource
-
-          inputs:
-            - name: k8s-homelab-helm-repo
-            - name: concourse-pipelines-repo
-
-          outputs:
-            - name: k8s-homelab-helm-repo
-
-          run:
-            path: sh
-            args:
-              - -ec
-              - |
-                ../concourse-pipelines-repo/common/scripts/setup_and_git_add.sh
-                git commit -m "CONCOURSE: $(cat git_commit_msg)"
-
-            dir: k8s-homelab-helm-repo
-
-      - put: k8s-homelab-helm-repo
-        params:
-          repository: k8s-homelab-helm-repo
-
-    on_success: *notify-success
-    on_error: *notify-failure
-    on_failure: *notify-failure
-
   - name: syncthing-version-bump
     serial: true
     plan:
@@ -210,7 +71,7 @@ jobs:
         - get: concourse-pipelines-repo
 
       - task: bump-versions
-        config: 
+        config:
           platform: linux
           image_resource: *yq-image-resource
 
@@ -230,7 +91,7 @@ jobs:
             path: concourse-pipelines-repo/helm_charts/bump_versions.sh
 
       - task: git-commit
-        config: 
+        config:
           platform: linux
           image_resource: *git-image-resource
 
@@ -271,7 +132,7 @@ jobs:
           passed: [syncthing-version-bump]
 
       - task: helm-package
-        config: 
+        config:
           platform: linux
           image_resource: *helm-image-resource
 
@@ -291,7 +152,7 @@ jobs:
             path: concourse-pipelines-repo/helm_charts/helm_pkg_and_move.sh
 
       - task: git-commit
-        config: 
+        config:
           platform: linux
           image_resource: *git-image-resource
 
@@ -331,7 +192,7 @@ jobs:
         - get: concourse-pipelines-repo
 
       - task: bump-versions
-        config: 
+        config:
           platform: linux
           image_resource: *yq-image-resource
 
@@ -351,7 +212,7 @@ jobs:
             path: concourse-pipelines-repo/helm_charts/bump_versions.sh
 
       - task: git-commit
-        config: 
+        config:
           platform: linux
           image_resource: *git-image-resource
 
@@ -392,7 +253,7 @@ jobs:
           passed: [xyzzy-version-bump]
 
       - task: helm-package
-        config: 
+        config:
           platform: linux
           image_resource: *helm-image-resource
 
@@ -412,7 +273,7 @@ jobs:
             path: concourse-pipelines-repo/helm_charts/helm_pkg_and_move.sh
 
       - task: git-commit
-        config: 
+        config:
           platform: linux
           image_resource: *git-image-resource
 
