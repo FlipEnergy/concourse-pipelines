@@ -117,7 +117,6 @@ jobs:
         params:
           repository: syncthing-helm-chart-repo
 
-    on_success: *notify-success
     on_error: *notify-failure
     on_failure: *notify-failure
   - name: syncthing-add-to-helm-repo
@@ -238,7 +237,6 @@ jobs:
         params:
           repository: xyzzy-helm-chart-repo
 
-    on_success: *notify-success
     on_error: *notify-failure
     on_failure: *notify-failure
   - name: xyzzy-add-to-helm-repo
