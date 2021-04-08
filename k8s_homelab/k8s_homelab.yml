@@ -16,15 +16,7 @@ resources:
         - Makefile
         - README.md
         - .gitignore
-
-  - name: concourse-pipelines-repo
-    type: git
-    icon: github
-    source:
-      uri: https://github.com/FlipEnergy/concourse-pipelines.git
-      branch: master
-      username: ((github_username))
-      password: ((github_password))
+  - *concourse-pipelines-repo
 
   - name: k8s-homelab-helm-repo-get
     type: git

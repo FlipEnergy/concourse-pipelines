@@ -3,15 +3,7 @@ resource_types:
 
 resources:
   - *discord
-
-  - name: concourse-pipelines-repo
-    type: git
-    icon: github
-    source:
-      uri: https://github.com/FlipEnergy/concourse-pipelines.git
-      branch: master
-      username: ((github_username))
-      password: ((github_password))
+  - *concourse-pipelines-repo
 
   - name: bitwarden-cli-github-release
     type: github-release
@@ -28,7 +20,7 @@ resources:
       repository: flipenergy/bitwarden-cli
       username: ((docker_hub_username))
       password: ((docker_hub_password))
-      tag: latest
+      tag: stable
 
   - name: yq-github-release
     type: github-release
@@ -45,7 +37,7 @@ resources:
       repository: flipenergy/yq-ubuntu
       username: ((docker_hub_username))
       password: ((docker_hub_password))
-      tag: latest
+      tag: stable
 
 jobs:
   - name: bitwarden-cli-image
@@ -61,7 +53,7 @@ jobs:
 
       - task: build-image
         privileged: true
-        config: 
+        config:
           platform: linux
           image_resource: *oci-build-image-resource
 
@@ -103,7 +95,7 @@ jobs:
 
       - task: build-image
         privileged: true
-        config: 
+        config:
           platform: linux
           image_resource: *oci-build-image-resource
 

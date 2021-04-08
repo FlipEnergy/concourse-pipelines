@@ -25,6 +25,16 @@ discord: &discord
       adapter: DiscordAdapter
       url: ((discord_webhook_url))
 
+concourse-pipelines-repo: &concourse-pipelines-repo
+  name: concourse-pipelines-repo
+  type: git
+  icon: github
+  source:
+    uri: https://github.com/FlipEnergy/concourse-pipelines.git
+    branch: master
+    username: ((github_username))
+    password: ((github_password))
+
 # task image resources
 bitwarden-cli-image-resource: &bitwarden-cli-image-resource
   type: registry-image

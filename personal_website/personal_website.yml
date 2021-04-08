@@ -15,15 +15,7 @@ resources:
       password: ((github_password))
       paths:
         - version
-
-  - name: concourse-pipelines-repo
-    type: git
-    icon: github
-    source:
-      uri: https://github.com/FlipEnergy/concourse-pipelines.git
-      branch: master
-      username: ((github_username))
-      password: ((github_password))
+  - *concourse-pipelines-repo
 
   # Where we will push the image to
   - name: docker-hub-repo
