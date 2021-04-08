@@ -10,7 +10,11 @@ RUN wget https://github.com/mattermost/focalboard/releases/download/v0.6.1/focal
 
 FROM ubuntu:20.04
 
-COPY --from=builder /focalboard /opt/focalboard
+RUN adduser --disabled-password --gecos "" focalboard
+
+USER focalboard
+
+COPY --from=builder --chown=focalboard:focalboard /focalboard /opt/focalboard
 
 RUN sed -i 's/"telemetry": true/"telemetry": false/g' /opt/focalboard/config.json
 
