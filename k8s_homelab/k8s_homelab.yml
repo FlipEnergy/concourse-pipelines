@@ -18,26 +18,6 @@ resources:
         - .gitignore
   - *concourse-pipelines-repo
 
-  - name: k8s-homelab-helm-repo-get
-    type: git
-    icon: github
-    source:
-      uri: https://github.com/FlipEnergy/k8s-homelab.git
-      branch: gh-pages
-      username: ((github_username))
-      password: ((github_password))
-      paths:
-        - charts
-
-  - name: k8s-homelab-helm-repo-put
-    type: git
-    icon: github
-    source:
-      uri: https://github.com/FlipEnergy/k8s-homelab.git
-      branch: gh-pages
-      username: ((github_username))
-      password: ((github_password))
-
 jobs:
   - name: deploy-k8s-homelab
     serial: true
@@ -69,7 +49,7 @@ jobs:
             path: concourse-pipelines-repo/common/scripts/get_secret_key.sh
 
       - task: deploy-homelab-k8s
-        config: 
+        config:
           platform: linux
           image_resource: *helmsman-image-resource
 
@@ -80,66 +60,6 @@ jobs:
 
           run:
             path: concourse-pipelines-repo/k8s_homelab/deploy_k8s_homelab.sh
-
-    on_success: *notify-success
-    on_error: *notify-failure
-    on_failure: *notify-failure
-      
-
-  - name: helm-index-and-push
-    serial: true
-    plan:
-      - in_parallel:
-        - get: k8s-homelab-helm-repo-get
-          trigger: true
-        - get: concourse-pipelines-repo
-
-      - task: helm-index
-        config:
-          platform: linux
-          image_resource: *helm-image-resource
-
-          inputs:
-            - name: k8s-homelab-helm-repo-get
-
-          outputs:
-            - name: k8s-homelab-helm-repo-get
-
-          run:
-            path: helm
-            args:
-              - repo
-              - index
-              - .
-              - --url
-              - https://flipenergy.github.io/k8s-homelab/
-            dir: k8s-homelab-helm-repo-get
-
-      - task: git-commit
-        config:
-          platform: linux
-          image_resource: *git-image-resource
-
-          inputs:
-            - name: k8s-homelab-helm-repo-get
-            - name: concourse-pipelines-repo
-
-          outputs:
-            - name: k8s-homelab-helm-repo-get
-
-          run:
-            path: sh
-            args:
-              - -ec
-              - |
-                ../concourse-pipelines-repo/common/scripts/setup_and_git_add.sh
-                git commit -m "CONCOURSE: update index.yaml"
-
-            dir: k8s-homelab-helm-repo-get
-
-      - put: k8s-homelab-helm-repo-put
-        params:
-          repository: k8s-homelab-helm-repo-get
 
     on_success: *notify-success
     on_error: *notify-failure

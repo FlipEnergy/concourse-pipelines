@@ -3,7 +3,6 @@ set-all-pipelines:
 	make personal-website-pipeline
 	make k8s-homelab-helm-repo-pipeline
 	make images-build-pipeline
-	make helm-charts-pipeline
 
 personal-website-pipeline:
 	make decrypt-secrets
@@ -21,12 +20,6 @@ images-build-pipeline:
 	make decrypt-secrets
 	cat common/reusable_blocks.yml images/image_build.yml > compiled_pipelines/image_build.yml
 	-fly -t homelab set-pipeline -n -p images-build -c compiled_pipelines/image_build.yml -l common/vars/secrets.dec.yml
-	make clean-decrypted-files
-
-helm-charts-pipeline:
-	make decrypt-secrets
-	cat common/reusable_blocks.yml helm_charts/helm_charts.yml > compiled_pipelines/helm_charts.yml
-	-fly -t homelab set-pipeline -n -p helm-charts -c compiled_pipelines/helm_charts.yml -l common/vars/secrets.dec.yml
 	make clean-decrypted-files
 
 decrypt-secrets:
