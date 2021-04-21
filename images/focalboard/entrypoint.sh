@@ -36,8 +36,6 @@ if [ -z "$SESSION_REFRESH_TIME" ]; then
   export SESSION_REFRESH_TIME=18000
 fi
 
-env
-
 echo "{
     \"serverRoot\": \"${SERVER_ROOT}\",
     \"port\": ${SERVER_PORT},
