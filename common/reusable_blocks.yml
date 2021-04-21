@@ -40,7 +40,7 @@ bitwarden-cli-image-resource: &bitwarden-cli-image-resource
   type: registry-image
   source:
     repository: flipenergy/bitwarden-cli
-    tag: stable
+    tag: latest
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 
@@ -80,7 +80,7 @@ yq-image-resource: &yq-image-resource
   type: registry-image
   source:
     repository: flipenergy/yq-ubuntu
-    tag: stable
+    tag: latest
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 

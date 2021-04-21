@@ -3,7 +3,13 @@ resource_types:
 
 resources:
   - *discord
-  - *concourse-pipelines-repo
+
+  - name: container-images-repo
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/container-images.git
+      branch: main
 
   # Bitwarden-cli
   - name: bitwarden-cli-github-release
@@ -21,7 +27,7 @@ resources:
       repository: flipenergy/bitwarden-cli
       username: ((docker_hub_username))
       password: ((docker_hub_password))
-      tag: stable
+      tag: latest
 
   # Focalboard
   - name: focalboard-github-release
@@ -39,7 +45,7 @@ resources:
       repository: flipenergy/focalboard
       username: ((docker_hub_username))
       password: ((docker_hub_password))
-      tag: stable
+      tag: latest
 
   # yq
   - name: yq-github-release
@@ -57,7 +63,7 @@ resources:
       repository: flipenergy/yq-ubuntu
       username: ((docker_hub_username))
       password: ((docker_hub_password))
-      tag: stable
+      tag: latest
 
 jobs:
   - name: bitwarden-cli-image
@@ -69,7 +75,7 @@ jobs:
           params:
             globs:
               - none
-        - get: concourse-pipelines-repo
+        - get: container-images-repo
 
       - task: build-image
         privileged: true
@@ -79,13 +85,13 @@ jobs:
 
           inputs:
             - name: bitwarden-cli-github-release
-            - name: concourse-pipelines-repo
+            - name: container-images-repo
 
           outputs:
             - name: image
 
           params:
-            CONTEXT: concourse-pipelines-repo/images/bitwarden-cli
+            CONTEXT: container-images-repo/images/bitwarden-cli
             BUILD_ARGS_FILE: build_args_file
           run:
             path: sh
@@ -111,7 +117,7 @@ jobs:
           params:
             globs:
               - none
-        - get: concourse-pipelines-repo
+        - get: container-images-repo
 
       - task: build-image
         privileged: true
@@ -121,13 +127,13 @@ jobs:
 
           inputs:
             - name: focalboard-github-release
-            - name: concourse-pipelines-repo
+            - name: container-images-repo
 
           outputs:
             - name: image
 
           params:
-            CONTEXT: concourse-pipelines-repo/images/focalboard
+            CONTEXT: container-images-repo/images/focalboard
             BUILD_ARGS_FILE: build_args_file
           run:
             path: sh
@@ -153,7 +159,7 @@ jobs:
           params:
             globs:
               - none
-        - get: concourse-pipelines-repo
+        - get: container-images-repo
 
       - task: build-image
         privileged: true
@@ -163,13 +169,13 @@ jobs:
 
           inputs:
             - name: yq-github-release
-            - name: concourse-pipelines-repo
+            - name: container-images-repo
 
           outputs:
             - name: image
 
           params:
-            CONTEXT: concourse-pipelines-repo/images/yq-ubuntu
+            CONTEXT: container-images-repo/images/yq-ubuntu
             BUILD_ARGS_FILE: build_args_file
 
           run:

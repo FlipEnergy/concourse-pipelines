@@ -18,7 +18,7 @@ k8s-homelab-helm-repo-pipeline:
 
 images-build-pipeline:
 	make decrypt-secrets
-	cat common/reusable_blocks.yml images/image_build.yml > compiled_pipelines/image_build.yml
+	cat common/reusable_blocks.yml image_build/image_build.yml > compiled_pipelines/image_build.yml
 	-fly -t homelab set-pipeline -n -p images-build -c compiled_pipelines/image_build.yml -l common/vars/secrets.dec.yml
 	make clean-decrypted-files
 
