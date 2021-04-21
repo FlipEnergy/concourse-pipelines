@@ -17,7 +17,7 @@ if [ -z "$DBCONFIG" ]; then
 fi
 
 if [ -z "$POSTGRES_DBCONFIG" ]; then
-  export POSTGRES_DBCONFIG='focalboard sslmode=disable'
+  export POSTGRES_DBCONFIG='dbname=focalboard sslmode=disable'
 fi
 
 if [ -z "$USE_SSL" ]; then
