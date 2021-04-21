@@ -91,7 +91,7 @@ jobs:
             - name: image
 
           params:
-            CONTEXT: container-images-repo/images/bitwarden-cli
+            CONTEXT: container-images-repo/bitwarden-cli
             BUILD_ARGS_FILE: build_args_file
           run:
             path: sh
@@ -133,7 +133,7 @@ jobs:
             - name: image
 
           params:
-            CONTEXT: container-images-repo/images/focalboard
+            CONTEXT: container-images-repo/focalboard
             BUILD_ARGS_FILE: build_args_file
           run:
             path: sh
@@ -175,7 +175,7 @@ jobs:
             - name: image
 
           params:
-            CONTEXT: container-images-repo/images/yq-ubuntu
+            CONTEXT: container-images-repo/yq-ubuntu
             BUILD_ARGS_FILE: build_args_file
 
           run:
