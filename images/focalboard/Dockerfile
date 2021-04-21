@@ -1,25 +1,26 @@
 # Dockerfile for Focalboard
 
 FROM alpine:latest AS builder
+ARG VERSION
 
 RUN apk update && apk add gzip tar wget
 
 # Now install Focalboard as a seperate layer
-RUN wget https://github.com/mattermost/focalboard/releases/download/v0.6.1/focalboard-server-linux-amd64.tar.gz \
+RUN wget https://github.com/mattermost/focalboard/releases/download/v${VERSION}/focalboard-server-linux-amd64.tar.gz \
     && tar -xvzf focalboard-server-linux-amd64.tar.gz
 
 FROM ubuntu:20.04
 
-RUN adduser --disabled-password --gecos "" focalboard
+RUN adduser --disabled-password --gecos "" focalboard \
+    && mkdir -p /data/files && chown focalboard:focalboard /data
 
 USER focalboard
 
 COPY --from=builder --chown=focalboard:focalboard /focalboard /opt/focalboard
-
-RUN sed -i 's/"telemetry": true/"telemetry": false/g' /opt/focalboard/config.json
+COPY --chown=focalboard:focalboard entrypoint.sh /entrypoint.sh
 
 EXPOSE 8000
 
-WORKDIR /opt/focalboard
+WORKDIR /data
 
-CMD /opt/focalboard/bin/focalboard-server
+CMD ["/entrypoint.sh"]
