@@ -5,7 +5,7 @@ resources:
   - *discord
 
   # Repo to pull for building image
-  - name: personal-website-version-bump
+  - name: personal-website-repo
     type: git
     icon: github
     source:
@@ -29,7 +29,7 @@ jobs:
   - name: build-and-push-image
     serial: true
     plan:
-      - get: personal-website-version-bump
+      - get: personal-website-repo
         trigger: true
 
       - task: build-image
@@ -39,20 +39,20 @@ jobs:
           image_resource: *oci-build-image-resource
 
           inputs:
-            - name: personal-website-version-bump
+            - name: personal-website-repo
 
           outputs:
             - name: image
 
           params:
-            CONTEXT: personal-website-version-bump
+            CONTEXT: personal-website-repo
           run:
             path: build
 
       - put: docker-hub-repo
         params:
           image: image/image.tar
-          additional_tags: personal-website-version-bump/version
+          additional_tags: personal-website-repo/version
 
     on_error: *notify-failure
     on_failure: *notify-failure
@@ -61,7 +61,7 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: personal-website-version-bump
+        - get: personal-website-repo
           passed: [build-and-push-image]
         - get: docker-hub-repo
           trigger: true
@@ -74,11 +74,11 @@ jobs:
           image_resource: *bitwarden-cli-image-resource
 
           inputs:
-            - name: personal-website-version-bump
+            - name: personal-website-repo
             - name: concourse-pipelines-repo
 
           outputs:
-            - name: personal-website-version-bump
+            - name: personal-website-repo
             - name: concourse-pipelines-repo
             - name: secrets
 
@@ -97,7 +97,7 @@ jobs:
           image_resource: *helmsman-image-resource
 
           inputs:
-            - name: personal-website-version-bump
+            - name: personal-website-repo
             - name: concourse-pipelines-repo
             - name: secrets
 

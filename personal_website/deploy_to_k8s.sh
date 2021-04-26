@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-export DENNIS_SITE_VERSION=`cat personal-website-version-bump/version`
+export DENNIS_SITE_VERSION=`cat personal-website-repo/version`
 
 echo "Importing secret key..."
 gpg --import secrets/secret.key
@@ -10,7 +10,7 @@ mkdir -p ~/.kube
 sops -d concourse-pipelines-repo/common/misc/kube_config.enc.yml > ~/.kube/config
 chmod 600 ~/.kube/config
 
-cd personal-website-version-bump
+cd personal-website-repo
 echo
 
 helmsman --apply -f dennis-site-DSF.yaml
