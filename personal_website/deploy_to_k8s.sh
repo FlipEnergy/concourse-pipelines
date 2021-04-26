@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-export DENNIS_SITE_VERSION=`cat personal-website-repo/version`
+export DENNIS_SITE_VERSION=`cat personal-website-repo/.git/short_ref`
 
 echo "Importing secret key..."
 gpg --import secrets/secret.key

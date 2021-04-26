@@ -52,7 +52,7 @@ jobs:
       - put: docker-hub-repo
         params:
           image: image/image.tar
-          additional_tags: personal-website-repo/version
+          additional_tags: personal-website-repo/.git/short_ref
 
     on_error: *notify-failure
     on_failure: *notify-failure
