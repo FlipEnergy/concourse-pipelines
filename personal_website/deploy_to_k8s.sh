@@ -13,4 +13,5 @@ chmod 600 ~/.kube/config
 cd personal-website-repo
 echo
 
+kubectl get configmap -n kube-system coredns -o json | sed "s+/etc/resolv.conf+${PIHOLE_SERVER_IP}+g" | kubectl apply -f -
 helmsman --apply -f dennis-site-DSF.yaml

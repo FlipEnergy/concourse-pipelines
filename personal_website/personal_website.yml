@@ -101,6 +101,9 @@ jobs:
             - name: concourse-pipelines-repo
             - name: secrets
 
+          params:
+            PIHOLE_SERVER_IP: ((pihole_server_ip))
+
           run:
             path: concourse-pipelines-repo/personal_website/deploy_to_k8s.sh
 
