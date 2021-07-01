@@ -31,7 +31,7 @@ concourse-pipelines-repo: &concourse-pipelines-repo
   icon: github
   source:
     uri: https://github.com/FlipEnergy/concourse-pipelines.git
-    branch: master
+    branch: main
     username: ((github_username))
     password: ((github_password))
 

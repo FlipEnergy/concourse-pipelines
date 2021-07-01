@@ -9,7 +9,7 @@ resources:
     icon: github
     source:
       uri: https://github.com/FlipEnergy/k8s-homelab.git
-      branch: master
+      branch: main
       username: ((github_username))
       password: ((github_password))
       ignore_paths:
