@@ -14,4 +14,4 @@ cd personal-website-repo
 echo
 
 kubectl get configmap -n kube-system coredns -o json | sed "s+/etc/resolv.conf+${PIHOLE_SERVER_IP}+g" | kubectl apply -f -
-helmsman --no-banner --apply -f dennis-site-DSF.yaml
+helmsman --no-banner --update-deps --apply -f dennis-site-DSF.yaml
