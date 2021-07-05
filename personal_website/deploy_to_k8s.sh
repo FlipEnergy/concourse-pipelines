@@ -10,8 +10,8 @@ mkdir -p ~/.kube
 sops -d concourse-pipelines-repo/common/misc/kube_config.enc.yml > ~/.kube/config
 chmod 600 ~/.kube/config
 
-cd personal-website-repo
+cd personal-website-repo/helm_chart
 echo
 
-kubectl get configmap -n kube-system coredns -o json | sed "s+/etc/resolv.conf+${PIHOLE_SERVER_IP}+g" | kubectl apply -f -
-helmsman --no-banner --update-deps --apply -f dennis-site-DSF.yaml
+helm dep update
+helm upgrade -i -n dennis-site dennis-site . --set image.tag=${DENNIS_SITE_VERSION} --wait
