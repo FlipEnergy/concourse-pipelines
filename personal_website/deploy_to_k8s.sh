@@ -13,5 +13,6 @@ chmod 600 ~/.kube/config
 cd personal-website-repo/helm_chart
 echo
 
+kubectl create ns dennis-site || true
 helm dep update
 helm upgrade -i -n dennis-site dennis-site . --set image.tag=${DENNIS_SITE_VERSION} --wait
