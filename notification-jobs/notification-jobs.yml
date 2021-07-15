@@ -1,0 +1,50 @@
+resource_types:
+  - *webhook-resource-type
+
+resources:
+  - *discord
+
+  - name: syncthing-dockerhub
+    type: registry-image
+    icon: docker
+    source:
+      repository: syncthing/syncthing
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
+
+jobs:
+  - name: syncthing
+    serial: true
+    plan:
+      - get: syncthing-dockerhub
+        params:
+          skip_download: true
+        trigger: true
+
+      - task: build-message
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: alpine
+              tag: 3.14
+              username: ((docker_hub_username))
+              password: ((docker_hub_password))
+
+          inputs:
+            - name: syncthing-dockerhub
+
+          outputs:
+            - name: message
+
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                echo ':new: **[Syncthing image tag](${BUILD_URL})**' $(cat syncthing-dockerhub/tag) > message/message.txt
+
+      - put: discord
+        params:
+          message_file: /tmp/build/put/message/message.txt

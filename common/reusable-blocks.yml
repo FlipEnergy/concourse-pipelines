@@ -4,6 +4,7 @@ webhook-resource-type: &webhook-resource-type
   type: registry-image
   source:
     repository: flavorjones/webhook-notification-resource
+    tag: v1.1.0
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 
@@ -57,14 +58,6 @@ helm-image-resource: &helm-image-resource
   source:
     repository: alpine/helm
     tag: 3.6.1
-    username: ((docker_hub_username))
-    password: ((docker_hub_password))
-
-git-image-resource: &git-image-resource
-  type: registry-image
-  source:
-    repository: alpine/git
-    tag: 1.13.1
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 
