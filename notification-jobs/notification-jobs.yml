@@ -4,6 +4,14 @@ resource_types:
 resources:
   - *discord
 
+  - name: owncast-dockerhub
+    type: registry-image
+    icon: docker
+    source:
+      repository: gabekangas/owncast
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
+
   - name: syncthing-dockerhub
     type: registry-image
     icon: docker
@@ -12,7 +20,61 @@ resources:
       username: ((docker_hub_username))
       password: ((docker_hub_password))
 
+  - name: vaultwarden-dockerhub
+    type: registry-image
+    icon: docker
+    source:
+      repository: vaultwarden/server
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
+
+  - name: whoogle-dockerhub
+    type: registry-image
+    icon: docker
+    source:
+      repository: benbusby/whoogle-search
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
+
+  - name: wikijs-dockerhub
+    type: registry-image
+    icon: docker
+    source:
+      repository: requarks/wiki
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
+
 jobs:
+  - name: owncast
+    serial: true
+    plan:
+      - get: owncast-dockerhub
+        params:
+          skip_download: true
+        trigger: true
+
+      - task: build-message
+        config:
+          platform: linux
+          image_resource: *alpine-image-resource
+
+          inputs:
+            - name: owncast-dockerhub
+
+          outputs:
+            - name: message
+
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                echo ':new: **[Owncast image tag](${BUILD_URL})**' $(cat owncast-dockerhub/tag) > message/message.txt
+
+      - put: discord
+        params:
+          message_file: /tmp/build/put/message/message.txt
+
   - name: syncthing
     serial: true
     plan:
@@ -24,13 +86,7 @@ jobs:
       - task: build-message
         config:
           platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: alpine
-              tag: 3.14
-              username: ((docker_hub_username))
-              password: ((docker_hub_password))
+          image_resource: *alpine-image-resource
 
           inputs:
             - name: syncthing-dockerhub
@@ -44,6 +100,96 @@ jobs:
               - -ec
               - |
                 echo ':new: **[Syncthing image tag](${BUILD_URL})**' $(cat syncthing-dockerhub/tag) > message/message.txt
+
+      - put: discord
+        params:
+          message_file: /tmp/build/put/message/message.txt
+
+  - name: vaultwarden
+    serial: true
+    plan:
+      - get: vaultwarden-dockerhub
+        params:
+          skip_download: true
+        trigger: true
+
+      - task: build-message
+        config:
+          platform: linux
+          image_resource: *alpine-image-resource
+
+          inputs:
+            - name: vaultwarden-dockerhub
+
+          outputs:
+            - name: message
+
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                echo ':new: **[Vaultwarden image tag](${BUILD_URL})**' $(cat vaultwarden-dockerhub/tag) > message/message.txt
+
+      - put: discord
+        params:
+          message_file: /tmp/build/put/message/message.txt
+
+  - name: whoogle
+    serial: true
+    plan:
+      - get: whoogle-dockerhub
+        params:
+          skip_download: true
+        trigger: true
+
+      - task: build-message
+        config:
+          platform: linux
+          image_resource: *alpine-image-resource
+
+          inputs:
+            - name: whoogle-dockerhub
+
+          outputs:
+            - name: message
+
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                echo ':new: **[Whoogle image tag](${BUILD_URL})**' $(cat whoogle-dockerhub/tag) > message/message.txt
+
+      - put: discord
+        params:
+          message_file: /tmp/build/put/message/message.txt
+
+  - name: wikijs
+    serial: true
+    plan:
+      - get: wikijs-dockerhub
+        params:
+          skip_download: true
+        trigger: true
+
+      - task: build-message
+        config:
+          platform: linux
+          image_resource: *alpine-image-resource
+
+          inputs:
+            - name: wikijs-dockerhub
+
+          outputs:
+            - name: message
+
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                echo ':new: **[WikiJS image tag](${BUILD_URL})**' $(cat wikijs-dockerhub/tag) > message/message.txt
 
       - put: discord
         params:

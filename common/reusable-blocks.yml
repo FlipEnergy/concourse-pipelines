@@ -37,6 +37,14 @@ concourse-pipelines-repo: &concourse-pipelines-repo
     password: ((github_password))
 
 # task image resources
+alpine-image-resource: &alpine-image-resource
+  type: registry-image
+  source:
+    repository: alpine
+    tag: 3.14
+    username: ((docker_hub_username))
+    password: ((docker_hub_password))
+
 bitwarden-cli-image-resource: &bitwarden-cli-image-resource
   type: registry-image
   source:
@@ -76,7 +84,6 @@ yq-image-resource: &yq-image-resource
     tag: latest
     username: ((docker_hub_username))
     password: ((docker_hub_password))
-
 
 # notifications
 notify-success: &notify-success
