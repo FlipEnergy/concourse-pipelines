@@ -89,7 +89,7 @@ jobs:
             BW_PASSWORD: ((bitwarden_password))
 
           run:
-            path: concourse-pipelines-repo/common/scripts/get_secret_key.sh
+            path: concourse-pipelines-repo/common/scripts/get-secret-key.sh
 
       - task: deploy-to-k8s
         config:
@@ -105,7 +105,7 @@ jobs:
             PIHOLE_SERVER_IP: ((pihole_server_ip))
 
           run:
-            path: concourse-pipelines-repo/personal_website/deploy_to_k8s.sh
+            path: concourse-pipelines-repo/personal-website/deploy-to-k8s.sh
 
     on_success: *notify-success
     on_error: *notify-failure

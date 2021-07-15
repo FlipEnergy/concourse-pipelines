@@ -1,2 +1,2 @@
 *.dec.yml
-compiled_pipelines/*
+compiled-pipelines/*

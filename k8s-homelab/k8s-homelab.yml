@@ -46,7 +46,7 @@ jobs:
             BW_PASSWORD: ((bitwarden_password))
 
           run:
-            path: concourse-pipelines-repo/common/scripts/get_secret_key.sh
+            path: concourse-pipelines-repo/common/scripts/get-secret-key.sh
 
       - task: deploy-homelab-k8s
         config:
@@ -62,7 +62,7 @@ jobs:
             PIHOLE_SERVER_IP: ((pihole_server_ip))
 
           run:
-            path: concourse-pipelines-repo/k8s_homelab/deploy_k8s_homelab.sh
+            path: concourse-pipelines-repo/k8s-homelab/deploy-k8s-homelab.sh
 
     on_success: *notify-success
     on_error: *notify-failure

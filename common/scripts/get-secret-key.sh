@@ -12,6 +12,6 @@ bw get item $BW_ITEM | jq -r '.notes' | base64 -d > secrets/secret.key
 
 # exit 1 if file empty
 if ! test -s secrets/secret.key ; then
-  echo 'key not written' 
+  echo 'key not written'
   exit 1
 fi
