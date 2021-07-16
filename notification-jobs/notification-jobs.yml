@@ -4,6 +4,14 @@ resource_types:
 resources:
   - *discord
 
+  - name: oci-build-task-dockerhub
+    type: registry-image
+    icon: docker
+    source:
+      repository: vito/oci-build-task
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
+
   - name: owncast-dockerhub
     type: registry-image
     icon: docker
@@ -45,6 +53,36 @@ resources:
       password: ((docker_hub_password))
 
 jobs:
+  - name: oci-build-task
+    serial: true
+    plan:
+      - get: oci-build-task-dockerhub
+        params:
+          skip_download: true
+        trigger: true
+
+      - task: build-message
+        config:
+          platform: linux
+          image_resource: *alpine-image-resource
+
+          inputs:
+            - name: oci-build-task-dockerhub
+
+          outputs:
+            - name: message
+
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                echo ':new: **[OCI-build image tag](${BUILD_URL})**' $(cat oci-build-task-dockerhub/tag) > message/message.txt
+
+      - put: discord
+        params:
+          message_file: /tmp/build/put/message/message.txt
+
   - name: owncast
     serial: true
     plan:
