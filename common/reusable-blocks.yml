@@ -73,7 +73,7 @@ oci-build-image-resource: &oci-build-image-resource
   type: registry-image
   source:
     repository: vito/oci-build-task
-    tag: 0.9.0
+    tag: 0.8.0
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 
