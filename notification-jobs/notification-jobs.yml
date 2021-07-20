@@ -36,6 +36,14 @@ resources:
       username: ((docker_hub_username))
       password: ((docker_hub_password))
 
+  - name: wg-access-server-dockerhub
+    type: registry-image
+    icon: docker
+    source:
+      repository: place1/wg-access-server
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
+
   - name: whoogle-dockerhub
     type: registry-image
     icon: docker
@@ -198,6 +206,36 @@ jobs:
               - -ec
               - |
                 echo ':new: **[Whoogle image tag](${BUILD_URL})**' $(cat whoogle-dockerhub/tag) > message/message.txt
+
+      - put: discord
+        params:
+          message_file: /tmp/build/put/message/message.txt
+
+  - name: wg-access-server
+    serial: true
+    plan:
+      - get: wg-access-server-dockerhub
+        params:
+          skip_download: true
+        trigger: true
+
+      - task: build-message
+        config:
+          platform: linux
+          image_resource: *alpine-image-resource
+
+          inputs:
+            - name: wg-access-server-dockerhub
+
+          outputs:
+            - name: message
+
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                echo ':new: **[WG Access Server image tag](${BUILD_URL})**' $(cat wg-access-server-dockerhub/tag) > message/message.txt
 
       - put: discord
         params:
