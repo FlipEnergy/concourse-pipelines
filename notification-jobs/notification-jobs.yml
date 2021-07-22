@@ -1,11 +1,13 @@
 resource_types:
   - *webhook-resource-type
 
+  - *my-registry-image-resource-type
+
 resources:
   - *discord
 
   - name: oci-build-task-dockerhub
-    type: registry-image
+    type: my-registry-image
     icon: docker
     source:
       repository: vito/oci-build-task
@@ -13,7 +15,7 @@ resources:
       password: ((docker_hub_password))
 
   - name: owncast-dockerhub
-    type: registry-image
+    type: my-registry-image
     icon: docker
     source:
       repository: gabekangas/owncast
@@ -21,7 +23,7 @@ resources:
       password: ((docker_hub_password))
 
   - name: syncthing-dockerhub
-    type: registry-image
+    type: my-registry-image
     icon: docker
     source:
       repository: syncthing/syncthing
@@ -29,7 +31,7 @@ resources:
       password: ((docker_hub_password))
 
   - name: vaultwarden-dockerhub
-    type: registry-image
+    type: my-registry-image
     icon: docker
     source:
       repository: vaultwarden/server
@@ -37,7 +39,7 @@ resources:
       password: ((docker_hub_password))
 
   - name: wg-access-server-dockerhub
-    type: registry-image
+    type: my-registry-image
     icon: docker
     source:
       repository: place1/wg-access-server
@@ -45,7 +47,7 @@ resources:
       password: ((docker_hub_password))
 
   - name: whoogle-dockerhub
-    type: registry-image
+    type: my-registry-image
     icon: docker
     source:
       repository: benbusby/whoogle-search
@@ -53,7 +55,7 @@ resources:
       password: ((docker_hub_password))
 
   - name: wikijs-dockerhub
-    type: registry-image
+    type: my-registry-image
     icon: docker
     source:
       repository: requarks/wiki
