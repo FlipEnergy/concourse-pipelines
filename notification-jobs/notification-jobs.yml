@@ -23,6 +23,12 @@ resources:
       <<: *docker_creds
       repository: gabekangas/owncast
 
+  - name: &registry_resource registry-docker-repo
+    <<: *resource_options
+    source:
+      <<: *docker_creds
+      repository: concourse/registry-image-resource
+
   - name: &sharry_resource sharry-docker-repo
     <<: *resource_options
     source:
@@ -112,6 +118,22 @@ jobs:
           params:
             IMAGE_NAME: Owncast
             RESOURCE_DIR: *owncast_resource
+
+      - *discord_notification
+
+  - name: registry-resource
+    plan:
+      - get: *registry_resource
+        <<: *get_options
+
+      - task: build-message
+        config:
+          <<: *build_message_config
+          inputs:
+            - name: *registry_resource
+          params:
+            IMAGE_NAME: Registry Resource
+            RESOURCE_DIR: *registry_resource
 
       - *discord_notification
 

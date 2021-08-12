@@ -19,7 +19,6 @@ webhook-resource-type: &webhook-resource-type
     repository: flavorjones/webhook-notification-resource
     tag: v1.1.0
 
-
 my-registry-image-resource-type: &my-registry-image-resource-type
   name: my-registry-image
   type: registry-image
