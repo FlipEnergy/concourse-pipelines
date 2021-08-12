@@ -1,274 +1,212 @@
+# begin templates
+
+resource_options: &resource_options
+  type: my-registry-image
+  icon: docker
+
+get_options: &get_options
+  params:
+    skip_download: true
+  trigger: true
+
+build_message_config: &build_message_config
+  platform: linux
+  image_resource: *alpine-image-resource
+  outputs:
+    - name: message
+  run:
+    path: sh
+    args:
+      - -ec
+      - |
+        echo ":new: **[${IMAGE_NAME}" 'image tag](${BUILD_URL})**' $(cat ${RESOURCE_DIR}/tag) > message/message.txt
+
+discord_notification: &discord_notification
+  put: discord
+  params:
+    message_file: /tmp/build/put/message/message.txt
+
+# end templates
+
 resource_types:
   - *webhook-resource-type
-
   - *my-registry-image-resource-type
 
 resources:
   - *discord
 
-  - name: oci-build-task-dockerhub
-    type: my-registry-image
-    icon: docker
+  - name: &oci_resource oci-build-task-docker-repo
+    <<: *resource_options
     source:
+      <<: *docker_creds
       repository: vito/oci-build-task
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
 
-  - name: owncast-dockerhub
-    type: my-registry-image
-    icon: docker
+  - name: &owncast_resource owncast-docker-repo
+    <<: *resource_options
     source:
+      <<: *docker_creds
       repository: gabekangas/owncast
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
 
-  - name: syncthing-dockerhub
-    type: my-registry-image
-    icon: docker
+  - name: &sharry_resource sharry-docker-repo
+    <<: *resource_options
     source:
+      <<: *docker_creds
+      repository: eikek0/sharry
+
+  - name: &syncthing_resource syncthing-docker-repo
+    <<: *resource_options
+    source:
+      <<: *docker_creds
       repository: syncthing/syncthing
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
 
-  - name: vaultwarden-dockerhub
-    type: my-registry-image
-    icon: docker
+  - name: &vaultwarden_resource vaultwarden-docker-repo
+    <<: *resource_options
     source:
+      <<: *docker_creds
       repository: vaultwarden/server
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
 
-  - name: wg-access-server-dockerhub
-    type: my-registry-image
-    icon: docker
+  - name: &wg_resource wg-access-server-docker-repo
+    <<: *resource_options
     source:
       repository: place1/wg-access-server
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
 
-  - name: whoogle-dockerhub
-    type: my-registry-image
-    icon: docker
+  - name: &whoogle_resource whoogle-docker-repo
+    <<: *resource_options
     source:
+      <<: *docker_creds
       repository: benbusby/whoogle-search
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
 
-  - name: wikijs-dockerhub
-    type: my-registry-image
-    icon: docker
+  - name: &wikijs_resource wikijs-docker-repo
+    <<: *resource_options
     source:
+      <<: *docker_creds
       repository: requarks/wiki
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
 
 jobs:
   - name: oci-build-task
-    serial: true
     plan:
-      - get: oci-build-task-dockerhub
-        params:
-          skip_download: true
-        trigger: true
+      - get: *oci_resource
+        <<: *get_options
 
       - task: build-message
         config:
-          platform: linux
-          image_resource: *alpine-image-resource
-
+          <<: *build_message_config
           inputs:
-            - name: oci-build-task-dockerhub
+            - name: *oci_resource
+          params:
+            IMAGE_NAME: OCI-build
+            RESOURCE_DIR: *oci_resource
 
-          outputs:
-            - name: message
-
-          run:
-            path: sh
-            args:
-              - -ec
-              - |
-                echo ':new: **[OCI-build image tag](${BUILD_URL})**' $(cat oci-build-task-dockerhub/tag) > message/message.txt
-
-      - put: discord
-        params:
-          message_file: /tmp/build/put/message/message.txt
+      - *discord_notification
 
   - name: owncast
-    serial: true
     plan:
-      - get: owncast-dockerhub
-        params:
-          skip_download: true
-        trigger: true
+      - get: *owncast_resource
+        <<: *get_options
 
       - task: build-message
         config:
-          platform: linux
-          image_resource: *alpine-image-resource
-
+          <<: *build_message_config
           inputs:
-            - name: owncast-dockerhub
+            - name: *owncast_resource
+          params:
+            IMAGE_NAME: Owncast
+            RESOURCE_DIR: *owncast_resource
 
-          outputs:
-            - name: message
+      - *discord_notification
 
-          run:
-            path: sh
-            args:
-              - -ec
-              - |
-                echo ':new: **[Owncast image tag](${BUILD_URL})**' $(cat owncast-dockerhub/tag) > message/message.txt
+  - name: sharry
+    plan:
+      - get: *sharry_resource
+        <<: *get_options
 
-      - put: discord
-        params:
-          message_file: /tmp/build/put/message/message.txt
+      - task: build-message
+        config:
+          <<: *build_message_config
+          inputs:
+            - name: *sharry_resource
+          params:
+            IMAGE_NAME: Sharry
+            RESOURCE_DIR: *sharry_resource
+
+      - *discord_notification
 
   - name: syncthing
-    serial: true
     plan:
-      - get: syncthing-dockerhub
-        params:
-          skip_download: true
-        trigger: true
+      - get: *syncthing_resource
+        <<: *get_options
 
       - task: build-message
         config:
-          platform: linux
-          image_resource: *alpine-image-resource
-
+          <<: *build_message_config
           inputs:
-            - name: syncthing-dockerhub
+            - name: *syncthing_resource
+          params:
+            IMAGE_NAME: Syncthing
+            RESOURCE_DIR: *syncthing_resource
 
-          outputs:
-            - name: message
-
-          run:
-            path: sh
-            args:
-              - -ec
-              - |
-                echo ':new: **[Syncthing image tag](${BUILD_URL})**' $(cat syncthing-dockerhub/tag) > message/message.txt
-
-      - put: discord
-        params:
-          message_file: /tmp/build/put/message/message.txt
+      - *discord_notification
 
   - name: vaultwarden
-    serial: true
     plan:
-      - get: vaultwarden-dockerhub
-        params:
-          skip_download: true
-        trigger: true
+      - get: *vaultwarden_resource
+        <<: *get_options
 
       - task: build-message
         config:
-          platform: linux
-          image_resource: *alpine-image-resource
-
+          <<: *build_message_config
           inputs:
-            - name: vaultwarden-dockerhub
+            - name: *vaultwarden_resource
+          params:
+            IMAGE_NAME: Vaultwarden
+            RESOURCE_DIR: *vaultwarden_resource
 
-          outputs:
-            - name: message
-
-          run:
-            path: sh
-            args:
-              - -ec
-              - |
-                echo ':new: **[Vaultwarden image tag](${BUILD_URL})**' $(cat vaultwarden-dockerhub/tag) > message/message.txt
-
-      - put: discord
-        params:
-          message_file: /tmp/build/put/message/message.txt
+      - *discord_notification
 
   - name: whoogle
-    serial: true
     plan:
-      - get: whoogle-dockerhub
-        params:
-          skip_download: true
-        trigger: true
+      - get: *whoogle_resource
+        <<: *get_options
 
       - task: build-message
         config:
-          platform: linux
-          image_resource: *alpine-image-resource
-
+          <<: *build_message_config
           inputs:
-            - name: whoogle-dockerhub
+            - name: *whoogle_resource
+          params:
+            IMAGE_NAME: Whoogle
+            RESOURCE_DIR: *whoogle_resource
 
-          outputs:
-            - name: message
-
-          run:
-            path: sh
-            args:
-              - -ec
-              - |
-                echo ':new: **[Whoogle image tag](${BUILD_URL})**' $(cat whoogle-dockerhub/tag) > message/message.txt
-
-      - put: discord
-        params:
-          message_file: /tmp/build/put/message/message.txt
+      - *discord_notification
 
   - name: wg-access-server
-    serial: true
     plan:
-      - get: wg-access-server-dockerhub
-        params:
-          skip_download: true
-        trigger: true
+      - get: *wg_resource
+        <<: *get_options
 
       - task: build-message
         config:
-          platform: linux
-          image_resource: *alpine-image-resource
-
+          <<: *build_message_config
           inputs:
-            - name: wg-access-server-dockerhub
+            - name: *wg_resource
+          params:
+            IMAGE_NAME: WG Access Server
+            RESOURCE_DIR: *wg_resource
 
-          outputs:
-            - name: message
-
-          run:
-            path: sh
-            args:
-              - -ec
-              - |
-                echo ':new: **[WG Access Server image tag](${BUILD_URL})**' $(cat wg-access-server-dockerhub/tag) > message/message.txt
-
-      - put: discord
-        params:
-          message_file: /tmp/build/put/message/message.txt
+      - *discord_notification
 
   - name: wikijs
-    serial: true
     plan:
-      - get: wikijs-dockerhub
-        params:
-          skip_download: true
-        trigger: true
+      - get: *wikijs_resource
+        <<: *get_options
 
       - task: build-message
         config:
-          platform: linux
-          image_resource: *alpine-image-resource
-
+          <<: *build_message_config
           inputs:
-            - name: wikijs-dockerhub
+            - name: *wikijs_resource
+          params:
+            IMAGE_NAME: WikiJS
+            RESOURCE_DIR: *wikijs_resource
 
-          outputs:
-            - name: message
-
-          run:
-            path: sh
-            args:
-              - -ec
-              - |
-                echo ':new: **[WikiJS image tag](${BUILD_URL})**' $(cat wikijs-dockerhub/tag) > message/message.txt
-
-      - put: discord
-        params:
-          message_file: /tmp/build/put/message/message.txt
+      - *discord_notification

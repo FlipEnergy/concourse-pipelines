@@ -1,21 +1,29 @@
+# blocks
+docker_creds: &docker_creds
+  username: ((docker_hub_username))
+  password: ((docker_hub_password))
+
+github_creds: &github_creds
+  username: ((github_username))
+  password: ((github_password))
+
 # resource types
 webhook-resource-type: &webhook-resource-type
   name: webhook-resource-type
   type: registry-image
   source:
+    <<: *docker_creds
     repository: flavorjones/webhook-notification-resource
     tag: v1.1.0
-    username: ((docker_hub_username))
-    password: ((docker_hub_password))
+
 
 my-registry-image-resource-type: &my-registry-image-resource-type
   name: my-registry-image
   type: registry-image
   source:
+    <<: *docker_creds
     repository: concourse/registry-image-resource
     tag: 1.3.1
-    username: ((docker_hub_username))
-    password: ((docker_hub_password))
 
 # resources
 discord: &discord
@@ -31,59 +39,52 @@ concourse-pipelines-repo: &concourse-pipelines-repo
   type: git
   icon: github
   source:
+    <<: *github_creds
     uri: https://github.com/FlipEnergy/concourse-pipelines.git
     branch: main
-    username: ((github_username))
-    password: ((github_password))
 
 # task image resources
 alpine-image-resource: &alpine-image-resource
   type: registry-image
   source:
+    <<: *docker_creds
     repository: alpine
     tag: 3.14
-    username: ((docker_hub_username))
-    password: ((docker_hub_password))
 
 bitwarden-cli-image-resource: &bitwarden-cli-image-resource
   type: registry-image
   source:
+    <<: *docker_creds
     repository: flipenergy/bitwarden-cli
     tag: latest
-    username: ((docker_hub_username))
-    password: ((docker_hub_password))
 
 helmsman-image-resource: &helmsman-image-resource
   type: registry-image
   source:
+    <<: *docker_creds
     repository: praqma/helmsman
     tag: latest
-    username: ((docker_hub_username))
-    password: ((docker_hub_password))
 
 helm-image-resource: &helm-image-resource
   type: registry-image
   source:
+    <<: *docker_creds
     repository: alpine/helm
     tag: latest
-    username: ((docker_hub_username))
-    password: ((docker_hub_password))
 
 oci-build-image-resource: &oci-build-image-resource
   type: registry-image
   source:
+    <<: *docker_creds
     repository: vito/oci-build-task
     tag: 0.8.0
-    username: ((docker_hub_username))
-    password: ((docker_hub_password))
 
 yq-image-resource: &yq-image-resource
   type: registry-image
   source:
+    <<: *docker_creds
     repository: flipenergy/yq-ubuntu
     tag: latest
-    username: ((docker_hub_username))
-    password: ((docker_hub_password))
 
 # notifications
 notify-success: &notify-success
