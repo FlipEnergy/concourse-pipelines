@@ -1,10 +1,20 @@
+# begin resource templates
+github_resource_options: &github_resource_options
+  type: github-release
+  icon: github
+
+image_resource_options: &image_resource_options
+  type: registry-image
+  icon: docker
+# end resource templates
+
 resource_types:
   - *webhook-resource-type
 
 resources:
   - *discord
 
-  - name: container-images-repo
+  - name: &ci_repo container-images-repo
     type: git
     icon: github
     source:
@@ -12,183 +22,158 @@ resources:
       branch: main
 
   # Bitwarden-cli
-  - name: bitwarden-cli-github-release
-    type: github-release
-    icon: github
+  - name: &bitwarden_release bitwarden-cli-github-release
+    <<: *github_resource_options
     source:
+      <<: *github_access_token
       owner: bitwarden
       repository: cli
-      access_token: ((github_password))
 
-  - name: bitwarden-cli-docker-repo
-    type: registry-image
-    icon: docker
+  - name: &bitwarden_docker bitwarden-cli-docker-repo
+    <<: *image_resource_options
     source:
+      <<: *docker_creds
       repository: flipenergy/bitwarden-cli
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
       tag: latest
 
   # Focalboard
-  - name: focalboard-github-release
-    type: github-release
-    icon: github
+  - name: &focalboard_release focalboard-github-release
+    <<: *github_resource_options
     source:
+      <<: *github_access_token
       owner: mattermost
       repository: focalboard
-      access_token: ((github_password))
 
-  - name: focalboard-docker-repo
-    type: registry-image
-    icon: docker
+  - name: &focalboard_docker focalboard-docker-repo
+    <<: *image_resource_options
     source:
+      <<: *docker_creds
       repository: flipenergy/focalboard
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
       tag: latest
 
   # yq
-  - name: yq-github-release
-    type: github-release
-    icon: github
+  - name: &yq_release yq-github-release
+    <<: *github_resource_options
     source:
+      <<: *github_access_token
       owner: mikefarah
       repository: yq
-      access_token: ((github_password))
 
-  - name: yq-ubuntu-docker-repo
-    type: registry-image
-    icon: docker
+  - name: &yq_docker yq-ubuntu-docker-repo
+    <<: *image_resource_options
     source:
+      <<: *docker_creds
       repository: flipenergy/yq-ubuntu
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
       tag: latest
+
+# begin job templates
+release_get_options: &release_get_options
+  trigger: true
+  params:
+    globs:
+      - none
+
+build_image_params: &build_image_params
+  CI_REPO_DIR: *ci_repo
+  BUILD_ARGS_FILE: build_args_file
+
+build_image_config: &build_image_config
+  platform: linux
+  image_resource: *oci-build-image-resource
+  outputs:
+    - name: image
+  run:
+    path: sh
+    args:
+      - -ec
+      - |
+        echo VERSION=$(cat ${VERSION_DIR_PATH}/version) > build_args_file \
+          && export CONTEXT=${CI_REPO_DIR}/${DOCKER_CONTEXT_DIR} \
+          && build
+
+put_image_params: &put_image_params
+  image: image/image.tar
+# end job templates
 
 jobs:
   - name: bitwarden-cli-image
     serial: true
     plan:
       - in_parallel:
-        - get: bitwarden-cli-github-release
-          trigger: true
-          params:
-            globs:
-              - none
-        - get: container-images-repo
+        - get: *bitwarden_release
+          <<: *release_get_options
+        - get: *ci_repo
 
       - task: build-image
         privileged: true
         config:
-          platform: linux
-          image_resource: *oci-build-image-resource
-
+          <<: *build_image_config
           inputs:
-            - name: bitwarden-cli-github-release
-            - name: container-images-repo
-
-          outputs:
-            - name: image
-
+            - name: *bitwarden_release
+            - name: *ci_repo
           params:
-            CONTEXT: container-images-repo/bitwarden-cli
-            BUILD_ARGS_FILE: build_args_file
-          run:
-            path: sh
-            args:
-              - -ec
-              - echo VERSION=$(cat bitwarden-cli-github-release/version) > build_args_file && build
+            <<: *build_image_params
+            DOCKER_CONTEXT_DIR: bitwarden-cli
+            VERSION_DIR_PATH: *bitwarden_release
 
-      - put: bitwarden-cli-docker-repo
+      - put: *bitwarden_docker
         params:
-          image: image/image.tar
+          <<: *put_image_params
           additional_tags: bitwarden-cli-github-release/version
 
-    on_success: *notify-success
-    on_error: *notify-failure
-    on_failure: *notify-failure
+    <<: *job_notifications
 
   - name: focalboard-image
     serial: true
     plan:
       - in_parallel:
-        - get: focalboard-github-release
-          trigger: true
-          params:
-            globs:
-              - none
-        - get: container-images-repo
+        - get: *focalboard_release
+          <<: *release_get_options
+        - get: *ci_repo
 
       - task: build-image
         privileged: true
         config:
-          platform: linux
-          image_resource: *oci-build-image-resource
-
+          <<: *build_image_config
           inputs:
-            - name: focalboard-github-release
-            - name: container-images-repo
-
-          outputs:
-            - name: image
-
+            - name: *focalboard_release
+            - name: *ci_repo
           params:
-            CONTEXT: container-images-repo/focalboard
-            BUILD_ARGS_FILE: build_args_file
-          run:
-            path: sh
-            args:
-              - -ec
-              - echo VERSION=$(cat focalboard-github-release/version) > build_args_file && build
+            <<: *build_image_params
+            DOCKER_CONTEXT_DIR: focalboard
+            VERSION_DIR_PATH: *focalboard_release
 
-      - put: focalboard-docker-repo
+      - put: *focalboard_docker
         params:
-          image: image/image.tar
-          additional_tags: focalboard-github-release/version
+          <<: *put_image_params
+          additional_tags: ${VERSION_DIR_PATH}/version
+          VERSION_DIR_PATH: focalboard-github-release/version
 
-    on_success: *notify-success
-    on_error: *notify-failure
-    on_failure: *notify-failure
+    <<: *job_notifications
 
   - name: yq-ubuntu-image
     serial: true
     plan:
       - in_parallel:
-        - get: yq-github-release
-          trigger: true
-          params:
-            globs:
-              - none
-        - get: container-images-repo
+        - get: *yq_release
+          <<: *release_get_options
+        - get: *ci_repo
 
       - task: build-image
         privileged: true
         config:
-          platform: linux
-          image_resource: *oci-build-image-resource
-
+          <<: *build_image_config
           inputs:
-            - name: yq-github-release
-            - name: container-images-repo
-
-          outputs:
-            - name: image
-
+            - name: *yq_release
+            - name: *ci_repo
           params:
-            CONTEXT: container-images-repo/yq-ubuntu
-            BUILD_ARGS_FILE: build_args_file
+            <<: *build_image_params
+            DOCKER_CONTEXT_DIR: yq-ubuntu
+            VERSION_DIR_PATH: *yq_release
 
-          run:
-            path: sh
-            args:
-              - -ec
-              - echo VERSION=$(cat yq-github-release/version) > build_args_file && build
-
-      - put: yq-ubuntu-docker-repo
+      - put: *yq_docker
         params:
-          image: image/image.tar
+          <<: *put_image_params
           additional_tags: yq-github-release/version
 
-    on_success: *notify-success
-    on_error: *notify-failure
-    on_failure: *notify-failure
+    <<: *job_notifications

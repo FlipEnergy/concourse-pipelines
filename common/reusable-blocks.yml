@@ -7,6 +7,9 @@ github_creds: &github_creds
   username: ((github_username))
   password: ((github_password))
 
+github_access_token: &github_access_token
+  access_token: ((github_password))
+
 # resource types
 webhook-resource-type: &webhook-resource-type
   name: webhook-resource-type
@@ -23,7 +26,7 @@ my-registry-image-resource-type: &my-registry-image-resource-type
   source:
     <<: *docker_creds
     repository: concourse/registry-image-resource
-    tag: 1.3.1
+    tag: 1.4.0
 
 # resources
 discord: &discord
@@ -87,15 +90,17 @@ yq-image-resource: &yq-image-resource
     tag: latest
 
 # notifications
-notify-success: &notify-success
-  put: discord
-  params:
-    message: "**SUCCESS** :rocket: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
-
-
 notify-failure: &notify-failure
   put: discord
   params:
     message: "**FAILED** :boom: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
+
+job_notifications: &job_notifications
+  on_success:
+    put: discord
+    params:
+      message: "**SUCCESS** :rocket: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
+  on_error: *notify-failure
+  on_failure: *notify-failure
 
 # end reusable blocks

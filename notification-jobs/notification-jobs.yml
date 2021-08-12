@@ -1,32 +1,8 @@
-# begin templates
-
+# begin resource templates
 resource_options: &resource_options
   type: my-registry-image
   icon: docker
-
-get_options: &get_options
-  params:
-    skip_download: true
-  trigger: true
-
-build_message_config: &build_message_config
-  platform: linux
-  image_resource: *alpine-image-resource
-  outputs:
-    - name: message
-  run:
-    path: sh
-    args:
-      - -ec
-      - |
-        echo ":new: **[${IMAGE_NAME}" 'image tag](${BUILD_URL})**' $(cat ${RESOURCE_DIR}/tag) > message/message.txt
-
-discord_notification: &discord_notification
-  put: discord
-  params:
-    message_file: /tmp/build/put/message/message.txt
-
-# end templates
+# end resource templates
 
 resource_types:
   - *webhook-resource-type
@@ -81,6 +57,30 @@ resources:
     source:
       <<: *docker_creds
       repository: requarks/wiki
+
+# begin job templates
+get_options: &get_options
+  params:
+    skip_download: true
+  trigger: true
+
+build_message_config: &build_message_config
+  platform: linux
+  image_resource: *alpine-image-resource
+  outputs:
+    - name: message
+  run:
+    path: sh
+    args:
+      - -ec
+      - |
+        echo ":new: **[${IMAGE_NAME}" 'image tag](${BUILD_URL})**' $(cat ${RESOURCE_DIR}/tag) > message/message.txt
+
+discord_notification: &discord_notification
+  put: discord
+  params:
+    message_file: /tmp/build/put/message/message.txt
+# end job templates
 
 jobs:
   - name: oci-build-task
