@@ -1,4 +1,4 @@
-# blocks
+# credential blocks
 docker_creds: &docker_creds
   username: ((docker_hub_username))
   password: ((docker_hub_password))
@@ -102,5 +102,28 @@ job_notifications: &job_notifications
       message: "**SUCCESS** :rocket: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
   on_error: *notify-failure
   on_failure: *notify-failure
+
+# tasks
+get_secret_key_task: &get_secret_key_task
+  task: get-secret-key
+  config:
+    platform: linux
+    image_resource: *bitwarden-cli-image-resource
+
+    inputs:
+      - name: concourse-pipelines-repo
+
+    outputs:
+      - name: concourse-pipelines-repo
+      - name: secrets
+
+    params:
+      BW_ITEM: ((bitwarden_item))
+      BW_SERVER: ((bitwarden_server))
+      BW_USERNAME: ((bitwarden_username))
+      BW_PASSWORD: ((bitwarden_password))
+
+    run:
+      path: concourse-pipelines-repo/common/scripts/get-secret-key.sh
 
 # end reusable blocks

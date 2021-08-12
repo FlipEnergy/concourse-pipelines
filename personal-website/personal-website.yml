@@ -68,28 +68,7 @@ jobs:
           passed: [build-and-push-image]
         - get: concourse-pipelines-repo
 
-      - task: get-secret-key
-        config:
-          platform: linux
-          image_resource: *bitwarden-cli-image-resource
-
-          inputs:
-            - name: personal-website-repo
-            - name: concourse-pipelines-repo
-
-          outputs:
-            - name: personal-website-repo
-            - name: concourse-pipelines-repo
-            - name: secrets
-
-          params:
-            BW_ITEM: ((bitwarden_item))
-            BW_SERVER: ((bitwarden_server))
-            BW_USERNAME: ((bitwarden_username))
-            BW_PASSWORD: ((bitwarden_password))
-
-          run:
-            path: concourse-pipelines-repo/common/scripts/get-secret-key.sh
+      - *get_secret_key_task
 
       - task: deploy-to-k8s
         config:
@@ -107,6 +86,4 @@ jobs:
           run:
             path: concourse-pipelines-repo/personal-website/deploy-to-k8s.sh
 
-    on_success: *notify-success
-    on_error: *notify-failure
-    on_failure: *notify-failure
+    <<: *job_notifications
