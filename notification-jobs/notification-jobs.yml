@@ -1,12 +1,11 @@
 # begin resource templates
 resource_options: &resource_options
-  type: my-registry-image
+  type: registry-image
   icon: docker
 # end resource templates
 
 resource_types:
   - *webhook-resource-type
-  - *my-registry-image-resource-type
 
 resources:
   - *discord
@@ -22,12 +21,6 @@ resources:
     source:
       <<: *docker_creds
       repository: gabekangas/owncast
-
-  - name: &registry_resource registry-docker-repo
-    <<: *resource_options
-    source:
-      <<: *docker_creds
-      repository: concourse/registry-image-resource
 
   - name: &sharry_resource sharry-docker-repo
     <<: *resource_options
@@ -118,22 +111,6 @@ jobs:
           params:
             IMAGE_NAME: Owncast
             RESOURCE_DIR: *owncast_resource
-
-      - *discord_notification
-
-  - name: registry-resource
-    plan:
-      - get: *registry_resource
-        <<: *get_options
-
-      - task: build-message
-        config:
-          <<: *build_message_config
-          inputs:
-            - name: *registry_resource
-          params:
-            IMAGE_NAME: Registry Resource
-            RESOURCE_DIR: *registry_resource
 
       - *discord_notification
 
