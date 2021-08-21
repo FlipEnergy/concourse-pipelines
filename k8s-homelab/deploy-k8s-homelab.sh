@@ -1,12 +1,6 @@
 #!/bin/sh -e
 
-echo "Importing secret key..."
-gpg --import secrets/secret.key
-
-echo "Decrypting kubectl config..."
-mkdir -p ~/.kube
-sops -d concourse-pipelines-repo/common/misc/kube-config.enc.yml > ~/.kube/config
-chmod 600 ~/.kube/config
+concourse-pipelines-repo/common/scripts/import-secret-key.sh
 
 cd k8s-homelab-repo
 echo
