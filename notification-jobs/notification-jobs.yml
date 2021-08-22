@@ -14,7 +14,7 @@ resources:
     <<: *resource_options
     source:
       <<: *docker_creds
-      repository: vito/oci-build-task
+      repository: concourse/oci-build-task
 
   - name: &owncast_resource owncast-docker-repo
     <<: *resource_options
