@@ -31,6 +31,8 @@ deploy_task_config: &deploy_task_config
     - name: k8s-homelab-repo
     - name: concourse-pipelines-repo
     - name: secrets
+  run:
+    path: concourse-pipelines-repo/k8s-homelab/deploy-k8s.sh
 # end job templates
 
 jobs:
@@ -45,9 +47,7 @@ jobs:
         config:
           <<: *deploy_task_config
           params:
-            PIHOLE_SERVER_IP: ((pihole_server_ip))
-          run:
-            path: concourse-pipelines-repo/k8s-homelab/deploy-k8s-homelab.sh
+            DSF_FILE: homelab.yaml
 
     <<: *job_notifications
 
@@ -58,10 +58,10 @@ jobs:
 
       - *get_secret_key_task
 
-      - task: deploy-homelab-k8s
+      - task: deploy-oracle-k8s
         config:
           <<: *deploy_task_config
-          run:
-            path: concourse-pipelines-repo/k8s-homelab/deploy-oracle.sh
+          params:
+            DSF_FILE: oracle.yaml
 
     <<: *job_notifications
