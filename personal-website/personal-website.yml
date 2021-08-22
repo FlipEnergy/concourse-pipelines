@@ -46,6 +46,7 @@ jobs:
 
           params:
             CONTEXT: personal-website-repo
+            IMAGE_PLATFORM: linux/arm64
           run:
             path: build
 
