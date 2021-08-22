@@ -5,52 +5,52 @@ resources:
   - *discord
 
   # Repo to pull for building image
-  - name: personal-website-repo
+  - name: &site-repo personal-website-repo
     type: git
     icon: github
     source:
       uri: https://github.com/FlipEnergy/personal-website.git
       branch: main
-      username: ((github_username))
-      password: ((github_password))
+      <<: *github_creds
   - *concourse-pipelines-repo
 
   # Where we will push the image to
-  - name: docker-hub-repo
+  - name: &docker-repo docker-hub-repo
     type: registry-image
     icon: docker
     source:
       repository: flipenergy/flipenergy
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
+      <<: *docker_creds
       tag: latest
+
+# begin job templates
+build-image-config: &build-image-config
+  platform: linux
+  image_resource: *oci-build-image-resource
+  inputs:
+    - name: *site-repo
+  outputs:
+    - name: image
+  run:
+    path: build
+
+# end job templates
 
 jobs:
   - name: build-and-push-image
     serial: true
     plan:
-      - get: personal-website-repo
+      - get: *site-repo
         trigger: true
 
       - task: build-image
         privileged: true
         config:
-          platform: linux
-          image_resource: *oci-build-image-resource
-
-          inputs:
-            - name: personal-website-repo
-
-          outputs:
-            - name: image
-
+          <<: *build-image-config
           params:
-            CONTEXT: personal-website-repo
-            IMAGE_PLATFORM: linux/arm64
-          run:
-            path: build
+            CONTEXT: *site-repo
 
-      - put: docker-hub-repo
+      - put: *docker-repo
         params:
           image: image/image.tar
           additional_tags: personal-website-repo/.git/short_ref
@@ -62,9 +62,9 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: personal-website-repo
+        - get: *site-repo
           passed: [build-and-push-image]
-        - get: docker-hub-repo
+        - get: *docker-repo
           trigger: true
           passed: [build-and-push-image]
         - get: concourse-pipelines-repo
@@ -77,7 +77,7 @@ jobs:
           image_resource: *helmsman-image-resource
 
           inputs:
-            - name: personal-website-repo
+            - name: *site-repo
             - name: concourse-pipelines-repo
             - name: secrets
 
