@@ -37,7 +37,6 @@ jobs:
           image_resource: *oci-build-image-resource
           inputs:
             - name: *site-repo
-            - name: public
           outputs:
             - name: image
           params:
