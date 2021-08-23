@@ -8,6 +8,8 @@ export DENNIS_SITE_VERSION=`cat "${REPO_DIR}/.git/short_ref"`
 cd "${REPO_DIR}/helm_chart"
 echo
 
+echo "Deploying version: ${DENNIS_SITE_VERSION}"
+
 kubectl config use-context "${KUBE_CONTEXT}"
 kubectl create ns dennis-site || true
 helm dep update
