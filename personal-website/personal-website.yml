@@ -23,19 +23,6 @@ resources:
       <<: *docker_creds
       tag: latest
 
-# begin job templates
-build-image-config: &build-image-config
-  platform: linux
-  image_resource: *oci-build-image-resource
-  inputs:
-    - name: *site-repo
-  outputs:
-    - name: image
-  run:
-    path: build
-
-# end job templates
-
 jobs:
   - name: build-and-push-image
     serial: true
@@ -43,12 +30,44 @@ jobs:
       - get: *site-repo
         trigger: true
 
+      - task: gen-static-site
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              <<: *docker_creds
+              repository: klakegg/hugo
+              tag: alpine
+          inputs:
+            - name: *site-repo
+          outputs:
+            - name: public
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                ln -s personal-website-repo/flipenergy flipenergy && hugo
+
       - task: build-image
         privileged: true
         config:
-          <<: *build-image-config
+          platform: linux
+          image_resource: *oci-build-image-resource
+          inputs:
+            - name: *site-repo
+          outputs:
+            - name: image
           params:
             CONTEXT: *site-repo
+            IMAGE_PLATFORM: linux/arm64
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                ln -s public ${CONTEXT}/public && build
 
       - put: *docker-repo
         params:
@@ -75,15 +94,13 @@ jobs:
         config:
           platform: linux
           image_resource: *helmsman-image-resource
-
           inputs:
             - name: *site-repo
             - name: concourse-pipelines-repo
             - name: secrets
-
           params:
-            PIHOLE_SERVER_IP: ((pihole_server_ip))
-
+            KUBE_CONTEXT: oracle
+            REPO_DIR: *site-repo
           run:
             path: concourse-pipelines-repo/personal-website/deploy-to-k8s.sh
 
