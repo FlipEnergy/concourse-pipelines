@@ -44,11 +44,12 @@ jobs:
           outputs:
             - name: public
           run:
+            dir: *site-repo
             path: sh
             args:
               - -ec
               - |
-                ln -s personal-website-repo/flipenergy flipenergy && hugo
+                cd flipenergy && hugo && cp -r public ../public
 
       - task: build-image
         privileged: true
@@ -57,6 +58,7 @@ jobs:
           image_resource: *oci-build-image-resource
           inputs:
             - name: *site-repo
+            - name: public
           outputs:
             - name: image
           params:
@@ -67,7 +69,7 @@ jobs:
             args:
               - -ec
               - |
-                ln -s public ${CONTEXT}/public && build
+                cp -r public ${CONTEXT}/public && build
 
       - put: *docker-repo
         params:

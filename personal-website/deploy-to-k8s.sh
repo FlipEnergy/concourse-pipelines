@@ -2,9 +2,9 @@
 
 concourse-pipelines-repo/common/scripts/import-secret-key.sh
 
-export DENNIS_SITE_VERSION=`cat ${REPO_DIR}/.git/short_ref`
+export DENNIS_SITE_VERSION=`cat "${REPO_DIR}/.git/short_ref"`
 
-cd ${REPO_DIR}/helm_chart
+cd "${REPO_DIR}/helm_chart"
 echo
 
 kubectl config use-context ${KUBE_CONTEXT}
