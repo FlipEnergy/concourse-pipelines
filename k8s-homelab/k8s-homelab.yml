@@ -4,7 +4,7 @@ resource_types:
 resources:
   - *discord
 
-  - name: k8s-homelab-repo
+  - name: &homelab-repo k8s-homelab-repo
     type: git
     icon: github
     source:
@@ -20,7 +20,7 @@ resources:
 
 # begin job templates
 get_in_parrallel: &get_in_parrallel
-  - get: k8s-homelab-repo
+  - get: *homelab-repo
     trigger: true
   - get: concourse-pipelines-repo
 
@@ -28,7 +28,7 @@ deploy_task_config: &deploy_task_config
   platform: linux
   image_resource: *helmsman-image-resource
   inputs:
-    - name: k8s-homelab-repo
+    - name: *homelab-repo
     - name: concourse-pipelines-repo
     - name: secrets
   run:
@@ -48,6 +48,7 @@ jobs:
           <<: *deploy_task_config
           params:
             DSF_FILE: homelab.yaml
+            REPO_DIR: *homelab-repo
 
     <<: *job_notifications
 
@@ -63,5 +64,6 @@ jobs:
           <<: *deploy_task_config
           params:
             DSF_FILE: oracle.yaml
+            REPO_DIR: *homelab-repo
 
     <<: *job_notifications
