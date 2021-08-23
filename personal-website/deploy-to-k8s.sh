@@ -16,4 +16,4 @@ helm dep update
 echo
 echo "Deploying version: [${DENNIS_SITE_VERSION}]"
 echo
-helm upgrade -i -n dennis-site dennis-site . --set "image.tag=${DENNIS_SITE_VERSION}" --wait
+helm upgrade -i -n dennis-site dennis-site . --set-string "image.tag=${DENNIS_SITE_VERSION}" --wait
