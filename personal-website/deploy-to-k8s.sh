@@ -1,4 +1,5 @@
-#!/usr/bin/env bash -e
+#!/usr/bin/env bash
+set -e
 
 concourse-pipelines-repo/common/scripts/import-secret-key.sh
 
