@@ -57,7 +57,7 @@ helmsman-image-resource: &helmsman-image-resource
   source:
     <<: *docker_creds
     repository: praqma/helmsman
-    tag: v3.7.2
+    tag: latest
 
 helm-image-resource: &helm-image-resource
   type: registry-image

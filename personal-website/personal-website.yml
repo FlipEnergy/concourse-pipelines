@@ -95,7 +95,7 @@ jobs:
       - task: deploy-to-k8s
         config:
           platform: linux
-          image_resource: *helmsman-image-resource
+          image_resource: *helm-image-resource
           inputs:
             - name: *site-repo
             - name: concourse-pipelines-repo
