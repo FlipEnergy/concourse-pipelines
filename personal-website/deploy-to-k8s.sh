@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/usr/bin/env bash -e
 
 concourse-pipelines-repo/common/scripts/import-secret-key.sh
 
@@ -10,4 +10,4 @@ echo
 kubectl config use-context ${KUBE_CONTEXT}
 kubectl create ns dennis-site || true
 helm dep update
-helm upgrade -i -n dennis-site dennis-site . --set image.tag=${DENNIS_SITE_VERSION} --wait
+helm upgrade -i -n dennis-site dennis-site . --set "image.tag=${DENNIS_SITE_VERSION}" --wait

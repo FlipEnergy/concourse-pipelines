@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/usr/bin/env bash
 
 echo "Importing secret key..."
 gpg --import secrets/secret.key
