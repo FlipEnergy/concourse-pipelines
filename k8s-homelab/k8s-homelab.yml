@@ -51,19 +51,3 @@ jobs:
             REPO_DIR: *homelab-repo
 
     <<: *job_notifications
-
-  - name: deploy-oracle
-    serial: true
-    plan:
-      - in_parallel: *get_in_parrallel
-
-      - *get_secret_key_task
-
-      - task: deploy-oracle-k8s
-        config:
-          <<: *deploy_task_config
-          params:
-            DSF_FILE: oracle.yaml
-            REPO_DIR: *homelab-repo
-
-    <<: *job_notifications
