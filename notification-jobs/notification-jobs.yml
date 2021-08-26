@@ -10,6 +10,12 @@ resource_types:
 resources:
   - *discord
 
+  - name: &influxdb2_resource influxdb2-docker-repo
+    <<: *resource_options
+    source:
+      <<: *docker_creds
+      repository: influxdb
+
   - name: &oci_resource oci-build-task-docker-repo
     <<: *resource_options
     source:
@@ -82,6 +88,22 @@ discord_notification: &discord_notification
 # end job templates
 
 jobs:
+  - name: influxdb2
+    plan:
+      - get: *influxdb2_resource
+        <<: *get_options
+
+      - task: build-message
+        config:
+          <<: *build_message_config
+          inputs:
+            - name: *influxdb2_resource
+          params:
+            IMAGE_NAME: InfluxDB2
+            RESOURCE_DIR: *influxdb2_resource
+
+      - *discord_notification
+
   - name: oci-build-task
     plan:
       - get: *oci_resource
