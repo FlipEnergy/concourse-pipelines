@@ -10,6 +10,12 @@ resource_types:
 resources:
   - *discord
 
+  - name: &duplicati_resource duplicati-docker-repo
+    <<: *resource_options
+    source:
+      <<: *docker_creds
+      repository: linuxserver/duplicati
+
   - name: &influxdb2_resource influxdb2-docker-repo
     <<: *resource_options
     source:
@@ -88,6 +94,22 @@ discord_notification: &discord_notification
 # end job templates
 
 jobs:
+  - name: duplicati
+    plan:
+      - get: *duplicati_resource
+        <<: *get_options
+
+      - task: build-message
+        config:
+          <<: *build_message_config
+          inputs:
+            - name: *duplicati_resource
+          params:
+            IMAGE_NAME: Duplicati
+            RESOURCE_DIR: *duplicati_resource
+
+      - *discord_notification
+
   - name: influxdb2
     plan:
       - get: *influxdb2_resource
