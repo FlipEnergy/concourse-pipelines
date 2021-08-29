@@ -58,6 +58,7 @@ jobs:
           image_resource: *oci-build-image-resource
           inputs:
             - name: *site-repo
+            - name: public
           outputs:
             - name: image
           params:
@@ -100,7 +101,7 @@ jobs:
             - name: concourse-pipelines-repo
             - name: secrets
           params:
-            KUBE_CONTEXT: default
+            KUBE_CONTEXT: oracle
             REPO_DIR: *site-repo
           run:
             path: concourse-pipelines-repo/personal-website/deploy-to-k8s.sh
