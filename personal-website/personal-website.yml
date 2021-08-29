@@ -42,7 +42,7 @@ jobs:
           inputs:
             - name: *site-repo
           outputs:
-            - name: public
+            - name: *site-repo
           run:
             dir: *site-repo
             path: sh
@@ -58,18 +58,13 @@ jobs:
           image_resource: *oci-build-image-resource
           inputs:
             - name: *site-repo
-            - name: public
           outputs:
             - name: image
           params:
             CONTEXT: *site-repo
             IMAGE_PLATFORM: linux/arm64
           run:
-            path: sh
-            args:
-              - -ec
-              - |
-                cp -r public ${CONTEXT}/public && build
+            path: build
 
       - put: *docker-repo
         params:
