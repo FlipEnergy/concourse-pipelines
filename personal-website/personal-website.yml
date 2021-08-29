@@ -30,6 +30,27 @@ jobs:
       - get: *site-repo
         trigger: true
 
+      - task: gen-static-site
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              <<: *docker_creds
+              repository: klakegg/hugo
+              tag: alpine
+          inputs:
+            - name: *site-repo
+          outputs:
+            - name: public
+          run:
+            dir: *site-repo
+            path: sh
+            args:
+              - -ec
+              - |
+                cd flipenergy && hugo && cp -r public ../public
+
       - task: build-image
         privileged: true
         config:
@@ -41,8 +62,13 @@ jobs:
             - name: image
           params:
             CONTEXT: *site-repo
+            IMAGE_PLATFORM: linux/arm64
           run:
-            path: build
+            path: sh
+            args:
+              - -ec
+              - |
+                cp -r public ${CONTEXT}/public && build
 
       - put: *docker-repo
         params:
