@@ -36,7 +36,7 @@ deploy_task_config: &deploy_task_config
 # end job templates
 
 jobs:
-  - name: deploy-k8s-homelab
+  - name: deploy-homelab
     serial: true
     plan:
       - in_parallel: *get_in_parrallel
