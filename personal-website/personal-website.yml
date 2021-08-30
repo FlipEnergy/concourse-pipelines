@@ -12,6 +12,11 @@ resources:
       uri: https://github.com/FlipEnergy/personal-website.git
       branch: main
       <<: *github_creds
+      ignore_paths:
+        - Makefile
+        - README.md
+        - .gitignore
+        - renovate.json
   - *concourse-pipelines-repo
 
   # Where we will push the image to

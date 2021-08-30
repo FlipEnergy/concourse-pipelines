@@ -10,8 +10,7 @@ resources:
     source:
       uri: https://github.com/FlipEnergy/k8s-homelab.git
       branch: main
-      username: ((github_username))
-      password: ((github_password))
+      <<: *github_creds
       ignore_paths:
         - Makefile
         - README.md
