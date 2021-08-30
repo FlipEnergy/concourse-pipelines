@@ -16,12 +16,6 @@ resources:
       <<: *docker_creds
       repository: linuxserver/duplicati
 
-  - name: &influxdb2_resource influxdb2-docker-repo
-    <<: *resource_options
-    source:
-      <<: *docker_creds
-      repository: influxdb
-
   - name: &oci_resource oci-build-task-docker-repo
     <<: *resource_options
     source:
@@ -107,22 +101,6 @@ jobs:
           params:
             IMAGE_NAME: Duplicati
             RESOURCE_DIR: *duplicati_resource
-
-      - *discord_notification
-
-  - name: influxdb2
-    plan:
-      - get: *influxdb2_resource
-        <<: *get_options
-
-      - task: build-message
-        config:
-          <<: *build_message_config
-          inputs:
-            - name: *influxdb2_resource
-          params:
-            IMAGE_NAME: InfluxDB2
-            RESOURCE_DIR: *influxdb2_resource
 
       - *discord_notification
 
