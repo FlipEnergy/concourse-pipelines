@@ -17,6 +17,7 @@ resources:
         - README.md
         - .gitignore
         - renovate.json
+
   - *concourse-pipelines-repo
 
   # Where we will push the image to
