@@ -2,6 +2,7 @@
 github_resource_options: &github_resource_options
   type: github-release
   icon: github
+  check_every: 30m
 
 image_resource_options: &image_resource_options
   type: registry-image
@@ -18,6 +19,7 @@ resources:
     type: git
     icon: github
     source:
+      <<: *github_creds
       uri: https://github.com/FlipEnergy/container-images.git
       branch: main
 

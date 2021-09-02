@@ -2,6 +2,7 @@
 resource_options: &resource_options
   type: registry-image
   icon: docker
+  check_every: 30m
 # end resource templates
 
 resource_types:

@@ -27,6 +27,7 @@ discord: &discord
   source:
       adapter: DiscordAdapter
       url: ((discord_webhook_url))
+  check_every: never
 
 concourse-pipelines-repo: &concourse-pipelines-repo
   name: concourse-pipelines-repo
@@ -36,6 +37,7 @@ concourse-pipelines-repo: &concourse-pipelines-repo
     <<: *github_creds
     uri: https://github.com/FlipEnergy/concourse-pipelines.git
     branch: main
+  check_every: 30m
 
 # task image resources
 alpine-image-resource: &alpine-image-resource
