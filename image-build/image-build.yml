@@ -53,6 +53,21 @@ resources:
       repository: flipenergy/focalboard
       tag: latest
 
+  # Restic-with-curl
+  - name: &restic_release restic-upstream-repo
+    <<: *image_resource_options
+    check_every: 30m
+    source:
+      <<: *docker_creds
+      repository: restic/restic
+
+  - name: &restic_docker restic-docker-repo
+    <<: *image_resource_options
+    source:
+      <<: *docker_creds
+      repository: flipenergy/restic
+      tag: latest
+
   # yq
   - name: &yq_release yq-github-release
     <<: *github_resource_options
@@ -89,7 +104,7 @@ build_image_config: &build_image_config
     args:
       - -ec
       - |
-        echo VERSION=$(cat ${VERSION_DIR_PATH}/version) > build_args_file \
+        echo VERSION=$(cat ${VERSION_DIR_PATH}/${VERSION_FILE}) > build_args_file \
           && export CONTEXT=${CI_REPO_DIR}/${DOCKER_CONTEXT_DIR} \
           && build
 
@@ -117,6 +132,7 @@ jobs:
             <<: *build_image_params
             DOCKER_CONTEXT_DIR: bitwarden-cli
             VERSION_DIR_PATH: *bitwarden_release
+            VERSION_FILE: version
 
       - put: *bitwarden_docker
         params:
@@ -144,12 +160,40 @@ jobs:
             <<: *build_image_params
             DOCKER_CONTEXT_DIR: focalboard
             VERSION_DIR_PATH: *focalboard_release
+            VERSION_FILE: version
 
       - put: *focalboard_docker
         params:
           <<: *put_image_params
-          additional_tags: ${VERSION_DIR_PATH}/version
-          VERSION_DIR_PATH: focalboard-github-release/version
+          additional_tags: focalboard-github-release/version
+
+    <<: *job_notifications
+
+  - name: restic-image
+    serial: true
+    plan:
+      - in_parallel:
+        - get: *restic_release
+          trigger: true
+        - get: *ci_repo
+
+      - task: build-image
+        privileged: true
+        config:
+          <<: *build_image_config
+          inputs:
+            - name: *restic_release
+            - name: *ci_repo
+          params:
+            <<: *build_image_params
+            DOCKER_CONTEXT_DIR: restic-with-curl
+            VERSION_DIR_PATH: *restic_release
+            VERSION_FILE: tag
+
+      - put: *restic_docker
+        params:
+          <<: *put_image_params
+          additional_tags: restic-upstream-repo/tag
 
     <<: *job_notifications
 
@@ -172,6 +216,7 @@ jobs:
             <<: *build_image_params
             DOCKER_CONTEXT_DIR: yq-ubuntu
             VERSION_DIR_PATH: *yq_release
+            VERSION_FILE: version
 
       - put: *yq_docker
         params:
