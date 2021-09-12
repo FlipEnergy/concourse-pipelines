@@ -58,6 +58,12 @@ resources:
       <<: *docker_creds
       repository: requarks/wiki
 
+  - name: &ytdl_resource ytdl-docker-repo
+    <<: *resource_options
+    source:
+      <<: *docker_creds
+      repository: tzahi12345/youtubedl-material
+
 # begin job templates
 get_options: &get_options
   params:
@@ -208,5 +214,21 @@ jobs:
           params:
             IMAGE_NAME: WikiJS
             RESOURCE_DIR: *wikijs_resource
+
+      - *discord_notification
+
+  - name: ytdl
+    plan:
+      - get: *ytdl_resource
+        <<: *get_options
+
+      - task: build-message
+        config:
+          <<: *build_message_config
+          inputs:
+            - name: *ytdl_resource
+          params:
+            IMAGE_NAME: YoutubeDL-Material
+            RESOURCE_DIR: *ytdl_resource
 
       - *discord_notification
