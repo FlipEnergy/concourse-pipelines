@@ -38,21 +38,6 @@ resources:
       repository: flipenergy/bitwarden-cli
       tag: latest
 
-  # Focalboard
-  - name: &focalboard_release focalboard-github-release
-    <<: *github_resource_options
-    source:
-      <<: *github_access_token
-      owner: mattermost
-      repository: focalboard
-
-  - name: &focalboard_docker focalboard-docker-repo
-    <<: *image_resource_options
-    source:
-      <<: *docker_creds
-      repository: flipenergy/focalboard
-      tag: latest
-
   # Restic-with-curl
   - name: &restic_release restic-upstream-repo
     <<: *image_resource_options
@@ -138,34 +123,6 @@ jobs:
         params:
           <<: *put_image_params
           additional_tags: bitwarden-cli-github-release/version
-
-    <<: *job_notifications
-
-  - name: focalboard-image
-    serial: true
-    plan:
-      - in_parallel:
-        - get: *focalboard_release
-          <<: *release_get_options
-        - get: *ci_repo
-
-      - task: build-image
-        privileged: true
-        config:
-          <<: *build_image_config
-          inputs:
-            - name: *focalboard_release
-            - name: *ci_repo
-          params:
-            <<: *build_image_params
-            DOCKER_CONTEXT_DIR: focalboard
-            VERSION_DIR_PATH: *focalboard_release
-            VERSION_FILE: version
-
-      - put: *focalboard_docker
-        params:
-          <<: *put_image_params
-          additional_tags: focalboard-github-release/version
 
     <<: *job_notifications
 
