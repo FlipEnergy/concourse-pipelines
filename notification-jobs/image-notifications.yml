@@ -9,7 +9,7 @@ resource_types:
   - *webhook-resource-type
 
 resources:
-  - *discord
+  - *discord_general
 
   - name: &oci_resource oci-build-task-docker-repo
     <<: *resource_options
@@ -46,12 +46,6 @@ resources:
     source:
       repository: place1/wg-access-server
 
-  - name: &whoogle_resource whoogle-docker-repo
-    <<: *resource_options
-    source:
-      <<: *docker_creds
-      repository: benbusby/whoogle-search
-
   - name: &wikijs_resource wikijs-docker-repo
     <<: *resource_options
     source:
@@ -83,7 +77,7 @@ build_message_config: &build_message_config
         echo ":new: **[${IMAGE_NAME}" 'image tag](${BUILD_URL})**' $(cat ${RESOURCE_DIR}/tag) > message/message.txt
 
 discord_notification: &discord_notification
-  put: discord
+  put: discord_general
   params:
     message_file: /tmp/build/put/message/message.txt
 # end job templates
@@ -102,7 +96,6 @@ jobs:
           params:
             IMAGE_NAME: OCI-build
             RESOURCE_DIR: *oci_resource
-
       - *discord_notification
 
   - name: owncast
@@ -118,7 +111,6 @@ jobs:
           params:
             IMAGE_NAME: Owncast
             RESOURCE_DIR: *owncast_resource
-
       - *discord_notification
 
   - name: sharry
@@ -134,7 +126,6 @@ jobs:
           params:
             IMAGE_NAME: Sharry
             RESOURCE_DIR: *sharry_resource
-
       - *discord_notification
 
   - name: syncthing
@@ -150,7 +141,6 @@ jobs:
           params:
             IMAGE_NAME: Syncthing
             RESOURCE_DIR: *syncthing_resource
-
       - *discord_notification
 
   - name: vaultwarden
@@ -166,24 +156,8 @@ jobs:
           params:
             IMAGE_NAME: Vaultwarden
             RESOURCE_DIR: *vaultwarden_resource
-
       - *discord_notification
 
-  - name: whoogle
-    plan:
-      - get: *whoogle_resource
-        <<: *get_options
-
-      - task: build-message
-        config:
-          <<: *build_message_config
-          inputs:
-            - name: *whoogle_resource
-          params:
-            IMAGE_NAME: Whoogle
-            RESOURCE_DIR: *whoogle_resource
-
-      - *discord_notification
 
   - name: wg-access-server
     plan:
@@ -198,7 +172,6 @@ jobs:
           params:
             IMAGE_NAME: WG Access Server
             RESOURCE_DIR: *wg_resource
-
       - *discord_notification
 
   - name: wikijs
@@ -214,7 +187,6 @@ jobs:
           params:
             IMAGE_NAME: WikiJS
             RESOURCE_DIR: *wikijs_resource
-
       - *discord_notification
 
   - name: ytdl
@@ -230,5 +202,4 @@ jobs:
           params:
             IMAGE_NAME: YoutubeDL-Material
             RESOURCE_DIR: *ytdl_resource
-
       - *discord_notification

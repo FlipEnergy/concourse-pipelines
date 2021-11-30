@@ -1,0 +1,28 @@
+resource_types:
+  - *webhook-resource-type
+
+resources:
+  - *discord_healthy_habits
+
+  - name: &timer timer
+    type: time
+    source:
+      interval: 5m
+      start: 8:00 AM
+      stop: 11:00 PM
+      location: America/Vancouver
+
+# begin job templates
+get_options: &get_options
+  trigger: true
+# end job templates
+
+jobs:
+  - name: drink-water
+    plan:
+      - get: *timer
+        <<: *get_options
+
+      - put: discord_healthy_habits
+        params:
+          message: ":droplet: **DRINK WATER, HOMIE!** :droplet:"

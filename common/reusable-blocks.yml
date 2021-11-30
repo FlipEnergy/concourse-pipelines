@@ -20,13 +20,22 @@ webhook-resource-type: &webhook-resource-type
     tag: v1.1.0
 
 # resources
-discord: &discord
-  name: discord
+discord_general: &discord_general
+  name: discord_general
   type: webhook-resource-type
   icon: bell
   source:
       adapter: DiscordAdapter
-      url: ((discord_webhook_url))
+      url: ((discord_general_webhook_url))
+  check_every: never
+
+discord_healthy_habits: &discord_healthy_habits
+  name: discord_healthy_habits
+  type: webhook-resource-type
+  icon: bell
+  source:
+      adapter: DiscordAdapter
+      url: ((discord_healthy_habits_webhook_url))
   check_every: never
 
 concourse-pipelines-repo: &concourse-pipelines-repo
@@ -84,13 +93,13 @@ yq-image-resource: &yq-image-resource
 
 # notifications
 notify-failure: &notify-failure
-  put: discord
+  put: discord_general
   params:
     message: "**FAILED** :boom: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
 
 job_notifications: &job_notifications
   on_success:
-    put: discord
+    put: discord_general
     params:
       message: "**SUCCESS** :rocket: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
   on_error: *notify-failure

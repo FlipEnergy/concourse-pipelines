@@ -2,7 +2,7 @@ resource_types:
   - *webhook-resource-type
 
 resources:
-  - *discord
+  - *discord_general
 
   - name: &homelab-repo k8s-homelab-repo
     type: git
