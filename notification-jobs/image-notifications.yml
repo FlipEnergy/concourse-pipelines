@@ -23,12 +23,6 @@ resources:
       <<: *docker_creds
       repository: gabekangas/owncast
 
-  - name: &sharry_resource sharry-docker-repo
-    <<: *resource_options
-    source:
-      <<: *docker_creds
-      repository: eikek0/sharry
-
   - name: &syncthing_resource syncthing-docker-repo
     <<: *resource_options
     source:
@@ -51,12 +45,6 @@ resources:
     source:
       <<: *docker_creds
       repository: requarks/wiki
-
-  - name: &ytdl_resource ytdl-docker-repo
-    <<: *resource_options
-    source:
-      <<: *docker_creds
-      repository: tzahi12345/youtubedl-material
 
 # begin job templates
 get_options: &get_options
@@ -111,21 +99,6 @@ jobs:
           params:
             IMAGE_NAME: Owncast
             RESOURCE_DIR: *owncast_resource
-      - *discord_notification
-
-  - name: sharry
-    plan:
-      - get: *sharry_resource
-        <<: *get_options
-
-      - task: build-message
-        config:
-          <<: *build_message_config
-          inputs:
-            - name: *sharry_resource
-          params:
-            IMAGE_NAME: Sharry
-            RESOURCE_DIR: *sharry_resource
       - *discord_notification
 
   - name: syncthing
@@ -187,19 +160,4 @@ jobs:
           params:
             IMAGE_NAME: WikiJS
             RESOURCE_DIR: *wikijs_resource
-      - *discord_notification
-
-  - name: ytdl
-    plan:
-      - get: *ytdl_resource
-        <<: *get_options
-
-      - task: build-message
-        config:
-          <<: *build_message_config
-          inputs:
-            - name: *ytdl_resource
-          params:
-            IMAGE_NAME: YoutubeDL-Material
-            RESOURCE_DIR: *ytdl_resource
       - *discord_notification
