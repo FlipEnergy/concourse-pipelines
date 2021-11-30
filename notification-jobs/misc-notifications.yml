@@ -50,4 +50,4 @@ jobs:
 
       - put: discord_healthy_habits
         params:
-          message: ":man_walking: **MOVE BITCH!** :person_walking:"
+          message: ":man_walking: **GET UP AND MOVE, BITCH!** :person_walking:"
