@@ -1,16 +1,32 @@
+# begin resource templates
+resource_options: &resource_options
+  type: time
+  icon: timer-outline
+  check_every: 10m
+
+resource_source: &resource_source
+  start: 8:00 AM
+  stop: 11:00 PM
+  location: America/Vancouver
+# end resource templates
+
 resource_types:
   - *webhook-resource-type
 
 resources:
   - *discord_healthy_habits
 
-  - name: &timer timer
-    type: time
+  - name: &hourly hourly
+    <<: *resource_options
     source:
-      interval: 5m
-      start: 8:00 AM
-      stop: 11:00 PM
-      location: America/Vancouver
+      interval: 1h
+      <<: *resource_source
+
+  - name: &two_hourly two-hourly
+    <<: *resource_options
+    source:
+      interval: 2h
+      <<: *resource_source
 
 # begin job templates
 get_options: &get_options
@@ -20,9 +36,18 @@ get_options: &get_options
 jobs:
   - name: drink-water
     plan:
-      - get: *timer
+      - get: *hourly
         <<: *get_options
 
       - put: discord_healthy_habits
         params:
           message: ":droplet: **DRINK WATER, HOMIE!** :droplet:"
+
+  - name: get-up-and-move
+    plan:
+      - get: *two_hourly
+        <<: *get_options
+
+      - put: discord_healthy_habits
+        params:
+          message: ":man_walking: **MOVE BITCH!** :person_walking:"
