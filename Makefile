@@ -2,6 +2,9 @@
 
 set-all-pipelines: compiled-pipelines-dir decrypt-secrets personal-website-pipeline k8s-homelab-pipeline images-build-pipeline image-notifications-pipeline misc-notifications-pipeline clean-decrypted-files
 
+login:
+	fly -t homelab login -kb
+
 # sub-commands
 
 compiled-pipelines-dir:
