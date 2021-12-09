@@ -38,6 +38,22 @@ resources:
       repository: flipenergy/bitwarden-cli
       tag: latest
 
+  # Fosscord
+  - name: &fosscord_release fosscord-server-release
+    <<: *github_resource_options
+    source:
+      <<: *github_access_token
+      pre_release: true
+      owner: fosscord
+      repository: fosscord-server
+
+  - name: &fosscord_docker fosscord-docker-repo
+    <<: *image_resource_options
+    source:
+      <<: *docker_creds
+      repository: flipenergy/fosscord
+      tag: latest
+
   # Restic-with-curl
   - name: &restic_release restic-upstream-repo
     <<: *image_resource_options
@@ -123,7 +139,33 @@ jobs:
         params:
           <<: *put_image_params
           additional_tags: bitwarden-cli-github-release/version
+    <<: *job_notifications
 
+  - name: fosscord-image
+    serial: true
+    plan:
+      - in_parallel:
+        - get: *fosscord_release
+          <<: *release_get_options
+        - get: *ci_repo
+
+      - task: build-image
+        privileged: true
+        config:
+          <<: *build_image_config
+          inputs:
+            - name: *fosscord_release
+            - name: *ci_repo
+          params:
+            <<: *build_image_params
+            DOCKER_CONTEXT_DIR: fosscord
+            VERSION_DIR_PATH: *fosscord_release
+            VERSION_FILE: version
+
+      - put: *fosscord_docker
+        params:
+          <<: *put_image_params
+          additional_tags: fosscord-server-release/version
     <<: *job_notifications
 
   - name: restic-image
@@ -151,7 +193,6 @@ jobs:
         params:
           <<: *put_image_params
           additional_tags: restic-upstream-repo/tag
-
     <<: *job_notifications
 
   - name: yq-ubuntu-image
@@ -179,5 +220,4 @@ jobs:
         params:
           <<: *put_image_params
           additional_tags: yq-github-release/version
-
     <<: *job_notifications
