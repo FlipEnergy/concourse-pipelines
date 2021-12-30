@@ -6,7 +6,7 @@ resource_options: &resource_options
 
 resource_source: &resource_source
   start: 9:30 AM
-  stop: 11:00 PM
+  stop: 10:00 PM
   location: America/Vancouver
 # end resource templates
 
@@ -41,7 +41,7 @@ jobs:
 
       - put: discord_healthy_habits
         params:
-          message: "**DRINK WATER, HOMIE!** :droplet:"
+          message: "**DRINK WATER!** :droplet:"
 
   - name: get-up-and-move
     plan:
@@ -50,4 +50,4 @@ jobs:
 
       - put: discord_healthy_habits
         params:
-          message: "**GET UP AND MOVE, BITCH!** :person_walking:"
+          message: "**GET UP AND MOVE!** :person_walking:"
