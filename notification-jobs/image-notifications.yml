@@ -38,6 +38,7 @@ resources:
   - name: &wg_resource wg-access-server-docker-repo
     <<: *resource_options
     source:
+      <<: *docker_creds
       repository: place1/wg-access-server
 
   - name: &wikijs_resource wikijs-docker-repo
