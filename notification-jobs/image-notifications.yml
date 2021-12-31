@@ -11,12 +11,6 @@ resource_types:
 resources:
   - *discord_general
 
-  - name: &metrics_resource metrics-scraper-docker-repo
-    <<: *resource_options
-    source:
-      <<: *docker_creds
-      repository: kubernetesui/metrics-scraper
-
   - name: &oci_resource oci-build-task-docker-repo
     <<: *resource_options
     source:
@@ -44,7 +38,6 @@ resources:
   - name: &wg_resource wg-access-server-docker-repo
     <<: *resource_options
     source:
-      <<: *docker_creds
       repository: place1/wg-access-server
 
   - name: &wikijs_resource wikijs-docker-repo
@@ -78,21 +71,6 @@ discord_notification: &discord_notification
 # end job templates
 
 jobs:
-  - name: metrics-scraper
-    plan:
-      - get: *metrics_resource
-        <<: *get_options
-
-      - task: build-message
-        config:
-          <<: *build_message_config
-          inputs:
-            - name: *metrics_resource
-          params:
-            IMAGE_NAME: Metrics Scraper
-            RESOURCE_DIR: *metrics_resource
-      - *discord_notification
-
   - name: oci-build-task
     plan:
       - get: *oci_resource
