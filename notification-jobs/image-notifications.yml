@@ -35,12 +35,6 @@ resources:
       <<: *docker_creds
       repository: vaultwarden/server
 
-  - name: &wg_resource wg-access-server-docker-repo
-    <<: *resource_options
-    source:
-      <<: *docker_creds
-      repository: place1/wg-access-server
-
   - name: &wikijs_resource wikijs-docker-repo
     <<: *resource_options
     source:
@@ -130,22 +124,6 @@ jobs:
           params:
             IMAGE_NAME: Vaultwarden
             RESOURCE_DIR: *vaultwarden_resource
-      - *discord_notification
-
-
-  - name: wg-access-server
-    plan:
-      - get: *wg_resource
-        <<: *get_options
-
-      - task: build-message
-        config:
-          <<: *build_message_config
-          inputs:
-            - name: *wg_resource
-          params:
-            IMAGE_NAME: WG Access Server
-            RESOURCE_DIR: *wg_resource
       - *discord_notification
 
   - name: wikijs
