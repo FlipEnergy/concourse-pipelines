@@ -13,13 +13,13 @@ resource_types:
   - *webhook-resource-type
 
 resources:
-  - *discord_general
+  - *discord-general
 
   - name: &ci_repo container-images-repo
     type: git
     icon: github
     source:
-      <<: *github_creds
+      <<: *github-creds
       uri: https://github.com/FlipEnergy/container-images.git
       branch: main
 
@@ -27,14 +27,14 @@ resources:
   - name: &bitwarden_release bitwarden-cli-github-release
     <<: *github_resource_options
     source:
-      <<: *github_access_token
+      <<: *github-access-token
       owner: bitwarden
       repository: cli
 
   - name: &bitwarden_docker bitwarden-cli-docker-repo
     <<: *image_resource_options
     source:
-      <<: *docker_creds
+      <<: *docker-creds
       repository: flipenergy/bitwarden-cli
       tag: latest
 
@@ -42,7 +42,7 @@ resources:
   - name: &fosscord_release fosscord-server-release
     <<: *github_resource_options
     source:
-      <<: *github_access_token
+      <<: *github-access-token
       pre_release: true
       owner: fosscord
       repository: fosscord-server
@@ -50,7 +50,7 @@ resources:
   - name: &fosscord_docker fosscord-docker-repo
     <<: *image_resource_options
     source:
-      <<: *docker_creds
+      <<: *docker-creds
       repository: flipenergy/fosscord
       tag: latest
 
@@ -59,13 +59,13 @@ resources:
     <<: *image_resource_options
     check_every: 30m
     source:
-      <<: *docker_creds
+      <<: *docker-creds
       repository: restic/restic
 
   - name: &restic_docker restic-docker-repo
     <<: *image_resource_options
     source:
-      <<: *docker_creds
+      <<: *docker-creds
       repository: flipenergy/restic
       tag: latest
 
@@ -73,14 +73,14 @@ resources:
   - name: &yq_release yq-github-release
     <<: *github_resource_options
     source:
-      <<: *github_access_token
+      <<: *github-access-token
       owner: mikefarah
       repository: yq
 
   - name: &yq_docker yq-ubuntu-docker-repo
     <<: *image_resource_options
     source:
-      <<: *docker_creds
+      <<: *docker-creds
       repository: flipenergy/yq-ubuntu
       tag: latest
 
@@ -139,7 +139,7 @@ jobs:
         params:
           <<: *put_image_params
           additional_tags: bitwarden-cli-github-release/version
-    <<: *job_notifications
+    <<: *job-notifications
 
   - name: fosscord-image
     serial: true
@@ -166,7 +166,7 @@ jobs:
         params:
           <<: *put_image_params
           additional_tags: fosscord-server-release/version
-    <<: *job_notifications
+    <<: *job-notifications
 
   - name: restic-image
     serial: true
@@ -193,7 +193,7 @@ jobs:
         params:
           <<: *put_image_params
           additional_tags: restic-upstream-repo/tag
-    <<: *job_notifications
+    <<: *job-notifications
 
   - name: yq-ubuntu-image
     serial: true
@@ -220,4 +220,4 @@ jobs:
         params:
           <<: *put_image_params
           additional_tags: yq-github-release/version
-    <<: *job_notifications
+    <<: *job-notifications

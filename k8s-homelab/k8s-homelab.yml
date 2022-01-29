@@ -2,7 +2,7 @@ resource_types:
   - *webhook-resource-type
 
 resources:
-  - *discord_general
+  - *discord-general
 
   - name: &homelab-repo k8s-homelab-repo
     type: git
@@ -10,7 +10,7 @@ resources:
     source:
       uri: https://github.com/FlipEnergy/k8s-homelab.git
       branch: main
-      <<: *github_creds
+      <<: *github-creds
       ignore_paths:
         - Makefile
         - README.md
@@ -41,7 +41,7 @@ jobs:
     plan:
       - in_parallel: *get_in_parrallel
 
-      - *get_secret_key_task
+      - *get-secret-key-task
 
       - task: deploy-homelab-k8s
         config:
@@ -50,14 +50,14 @@ jobs:
             KUBE_CONTEXT: homelab
             REPO_DIR: *homelab-repo
 
-    <<: *job_notifications
+    <<: *job-notifications
 
   - name: deploy-oracle
     serial: true
     plan:
       - in_parallel: *get_in_parrallel
 
-      - *get_secret_key_task
+      - *get-secret-key-task
 
       - task: deploy-oracle-k8s
         config:
@@ -66,4 +66,4 @@ jobs:
             KUBE_CONTEXT: oracle
             REPO_DIR: *homelab-repo
 
-    <<: *job_notifications
+    <<: *job-notifications

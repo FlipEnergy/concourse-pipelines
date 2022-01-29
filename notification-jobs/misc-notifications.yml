@@ -14,7 +14,7 @@ resource_types:
   - *webhook-resource-type
 
 resources:
-  - *discord_healthy_habits
+  - *discord-healthy-habits
 
   - name: &hourly hourly
     <<: *resource_options
@@ -39,7 +39,7 @@ jobs:
       - get: *hourly
         <<: *get_options
 
-      - put: discord_healthy_habits
+      - put: discord-healthy-habits
         params:
           message: "**DRINK WATER!** :droplet:"
 
@@ -48,6 +48,6 @@ jobs:
       - get: *two_hourly
         <<: *get_options
 
-      - put: discord_healthy_habits
+      - put: discord-healthy-habits
         params:
           message: "**GET UP AND MOVE!** :person_walking:"

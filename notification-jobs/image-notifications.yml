@@ -9,36 +9,36 @@ resource_types:
   - *webhook-resource-type
 
 resources:
-  - *discord_general
+  - *discord-general
 
   - name: &oci_resource oci-build-task-docker-repo
     <<: *resource_options
     source:
-      <<: *docker_creds
+      <<: *docker-creds
       repository: concourse/oci-build-task
 
   - name: &owncast_resource owncast-docker-repo
     <<: *resource_options
     source:
-      <<: *docker_creds
+      <<: *docker-creds
       repository: gabekangas/owncast
 
   - name: &syncthing_resource syncthing-docker-repo
     <<: *resource_options
     source:
-      <<: *docker_creds
+      <<: *docker-creds
       repository: syncthing/syncthing
 
   - name: &vaultwarden_resource vaultwarden-docker-repo
     <<: *resource_options
     source:
-      <<: *docker_creds
+      <<: *docker-creds
       repository: vaultwarden/server
 
   - name: &wikijs_resource wikijs-docker-repo
     <<: *resource_options
     source:
-      <<: *docker_creds
+      <<: *docker-creds
       repository: requarks/wiki
 
 # begin job templates
@@ -60,7 +60,7 @@ build_message_config: &build_message_config
         echo ":new: **[${IMAGE_NAME}" 'image tag](${BUILD_URL})**' $(cat ${RESOURCE_DIR}/tag) > message/message.txt
 
 discord_notification: &discord_notification
-  put: discord_general
+  put: discord-general
   params:
     message_file: /tmp/build/put/message/message.txt
 # end job templates

@@ -1,13 +1,13 @@
 # credential blocks
-docker_creds: &docker_creds
+docker-creds: &docker-creds
   username: ((docker_hub_username))
   password: ((docker_hub_password))
 
-github_creds: &github_creds
+github-creds: &github-creds
   username: ((github_username))
   password: ((github_password))
 
-github_access_token: &github_access_token
+github-access-token: &github-access-token
   access_token: ((github_password))
 
 # resource types
@@ -15,13 +15,13 @@ webhook-resource-type: &webhook-resource-type
   name: webhook-resource-type
   type: registry-image
   source:
-    <<: *docker_creds
+    <<: *docker-creds
     repository: flavorjones/webhook-notification-resource
     tag: v1.1.0
 
 # resources
-discord_general: &discord_general
-  name: discord_general
+discord-general: &discord-general
+  name: discord-general
   type: webhook-resource-type
   icon: bell
   source:
@@ -29,8 +29,8 @@ discord_general: &discord_general
       url: ((discord_general_webhook_url))
   check_every: never
 
-discord_healthy_habits: &discord_healthy_habits
-  name: discord_healthy_habits
+discord-healthy-habits: &discord-healthy-habits
+  name: discord-healthy-habits
   type: webhook-resource-type
   icon: bell
   source:
@@ -43,7 +43,7 @@ concourse-pipelines-repo: &concourse-pipelines-repo
   type: git
   icon: github
   source:
-    <<: *github_creds
+    <<: *github-creds
     uri: https://github.com/FlipEnergy/concourse-pipelines.git
     branch: main
   check_every: 30m
@@ -52,61 +52,61 @@ concourse-pipelines-repo: &concourse-pipelines-repo
 alpine-image-resource: &alpine-image-resource
   type: registry-image
   source:
-    <<: *docker_creds
+    <<: *docker-creds
     repository: alpine
     tag: 3.14
 
 bitwarden-cli-image-resource: &bitwarden-cli-image-resource
   type: registry-image
   source:
-    <<: *docker_creds
+    <<: *docker-creds
     repository: flipenergy/bitwarden-cli
     tag: latest
 
 helmsman-image-resource: &helmsman-image-resource
   type: registry-image
   source:
-    <<: *docker_creds
+    <<: *docker-creds
     repository: praqma/helmsman
     tag: latest
 
 helm-image-resource: &helm-image-resource
   type: registry-image
   source:
-    <<: *docker_creds
+    <<: *docker-creds
     repository: alpine/helm
     tag: latest
 
 oci-build-image-resource: &oci-build-image-resource
   type: registry-image
   source:
-    <<: *docker_creds
+    <<: *docker-creds
     repository: concourse/oci-build-task
     tag: 0.9.0
 
 yq-image-resource: &yq-image-resource
   type: registry-image
   source:
-    <<: *docker_creds
+    <<: *docker-creds
     repository: flipenergy/yq-ubuntu
     tag: latest
 
 # notifications
 notify-failure: &notify-failure
-  put: discord_general
+  put: discord-general
   params:
     message: "**FAILED** :boom: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
 
-job_notifications: &job_notifications
+job-notifications: &job-notifications
   on_success:
-    put: discord_general
+    put: discord-general
     params:
       message: "**SUCCESS** :rocket: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
   on_error: *notify-failure
   on_failure: *notify-failure
 
 # tasks
-get_secret_key_task: &get_secret_key_task
+get-secret-key-task: &get-secret-key-task
   task: get-secret-key
   config:
     platform: linux

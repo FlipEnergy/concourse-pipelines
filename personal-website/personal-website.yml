@@ -2,7 +2,7 @@ resource_types:
   - *webhook-resource-type
 
 resources:
-  - *discord_general
+  - *discord-general
 
   # Repo to pull for building image
   - name: &site-repo personal-website-repo
@@ -11,7 +11,7 @@ resources:
     source:
       uri: https://github.com/FlipEnergy/personal-website.git
       branch: main
-      <<: *github_creds
+      <<: *github-creds
       ignore_paths:
         - Makefile
         - README.md
@@ -26,7 +26,7 @@ resources:
     icon: docker
     source:
       repository: flipenergy/flipenergy
-      <<: *docker_creds
+      <<: *docker-creds
       tag: latest
 
 jobs:
@@ -42,7 +42,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              <<: *docker_creds
+              <<: *docker-creds
               repository: klakegg/hugo
               tag: alpine
           inputs:
@@ -91,7 +91,7 @@ jobs:
           passed: [build-and-push-image]
         - get: concourse-pipelines-repo
 
-      - *get_secret_key_task
+      - *get-secret-key-task
 
       - task: deploy-to-k8s
         config:
@@ -107,4 +107,4 @@ jobs:
           run:
             path: concourse-pipelines-repo/personal-website/deploy-to-k8s.sh
 
-    <<: *job_notifications
+    <<: *job-notifications
