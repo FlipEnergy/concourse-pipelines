@@ -36,3 +36,6 @@ image-notifications-pipeline:
 misc-notifications-pipeline:
 	cat common/reusable-blocks.yml notification-jobs/misc-notifications.yml > compiled-pipelines/misc-notifications.yml
 	-fly -t homelab set-pipeline -n -p misc-notifications -c compiled-pipelines/misc-notifications.yml -l common/vars/secrets.dec.yml -l common/vars/vars.yml
+
+save-kube-config:
+	kubectl config view -o json --flatten | sops --input-type json --output-type yaml -e --output common/misc/kube-config.enc.yml /dev/stdin
