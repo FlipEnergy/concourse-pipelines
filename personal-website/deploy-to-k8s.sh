@@ -10,10 +10,9 @@ cd "${REPO_DIR}/helm_chart"
 echo
 
 kubectl config use-context "${KUBE_CONTEXT}"
-kubectl create ns dennis-site || true
 helm dep update
 
 echo
 echo "Deploying version: [${DENNIS_SITE_VERSION}]"
 echo
-helm upgrade -i -n dennis-site dennis-site . --set-string "image.tag=${DENNIS_SITE_VERSION}" --wait
+helm upgrade -i -n default dennis-site . --set-string "image.tag=${DENNIS_SITE_VERSION}" --wait
