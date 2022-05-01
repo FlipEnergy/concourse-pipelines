@@ -1,0 +1,52 @@
+resource_types:
+- name: git-branches
+  type: registry-image
+  source:
+    repository: aoldershaw/git-branches-resource
+
+resources:
+- name: branches
+  type: git-branches
+  icon: github
+  source:
+    uri: https://github.com/FlipEnergy/k8s-homelab.git
+
+- *concourse-pipelines-repo
+
+jobs:
+- name: set-branch-pipelines
+  plan:
+    - in_parallel:
+      - get: branches
+        trigger: true
+      - get: concourse-pipelines-repo
+
+    - load_var: branches
+      file: branches/branches.json
+
+    - task: build-pipeline-template
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source:
+            <<: *docker-creds
+            repository: busybox
+            tag: latest
+        inputs:
+          - name: concourse-pipelines-repo
+        outputs:
+          - name: concourse-pipelines-repo
+        run:
+          path: /bin/sh
+          args:
+            - -c
+            - mkdir -p compiled-pipelines && cat common/reusable-blocks.yml k8s-homelab/common.yml k8s-homelab/diff-k8s-homelab.yml > compiled-pipelines/diff-k8s-homelab.yml
+          dir: concourse-pipelines-repo
+
+    - across:
+      - var: branch
+        values: ((.:branches))
+      set_pipeline: k8s-homelab-branch-diff
+      file: concourse-pipelines-repo/compiled-pipelines/diff-k8s-homelab.yml
+      vars: {branch: ((.:branch.name))}

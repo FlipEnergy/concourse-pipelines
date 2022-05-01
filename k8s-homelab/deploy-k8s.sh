@@ -6,4 +6,4 @@ concourse-pipelines-repo/common/scripts/import-secret-key.sh
 cd "${REPO_DIR}"
 echo
 
-helmsman --no-banner -p 3 --apply -f "${KUBE_CONTEXT}.yaml"
+helmsman --no-banner -p 3 "$ACTION" -f "${KUBE_CONTEXT}.yaml"

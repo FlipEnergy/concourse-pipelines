@@ -1,0 +1,41 @@
+resources:
+  - name: k8s-homelab-repo
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/k8s-homelab.git
+      branch: ((branch))
+      <<: *github-creds
+
+  - *concourse-pipelines-repo
+
+jobs:
+  - name: diff-homelab
+    serial: true
+    plan:
+      - in_parallel: *get_in_parrallel
+
+      - *get-secret-key-task
+
+      - task: diff-homelab-k8s
+        config:
+          <<: *helmsman_task_config
+          params:
+            ACTION: -show-diff
+            KUBE_CONTEXT: homelab
+            REPO_DIR: k8s-homelab-repo
+
+  - name: diff-oracle
+    serial: true
+    plan:
+      - in_parallel: *get_in_parrallel
+
+      - *get-secret-key-task
+
+      - task: diff-oracle-k8s
+        config:
+          <<: *helmsman_task_config
+          params:
+            ACTION: -show-diff
+            KUBE_CONTEXT: oracle
+            REPO_DIR: k8s-homelab-repo

@@ -1,0 +1,14 @@
+get_in_parrallel: &get_in_parrallel
+  - get: k8s-homelab-repo
+    trigger: true
+  - get: concourse-pipelines-repo
+
+helmsman_task_config: &helmsman_task_config
+  platform: linux
+  image_resource: *helmsman-image-resource
+  inputs:
+    - name: k8s-homelab-repo
+    - name: concourse-pipelines-repo
+    - name: secrets
+  run:
+    path: concourse-pipelines-repo/k8s-homelab/deploy-k8s.sh
