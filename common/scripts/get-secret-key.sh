@@ -8,10 +8,15 @@ export BW_SESSION=`bw login "$BW_USERNAME" "$BW_PASSWORD" --raw`
 mkdir -p secrets
 
 echo "Getting secret key..."
-bw get item "$BW_ITEM" | jq -r '.notes' | base64 -d > secrets/secret.key
 
-# exit 1 if file empty
-if ! test -s secrets/secret.key ; then
-  echo 'key not written'
-  exit 1
-fi
+retries=3
+while [ "$retries" -gt 0 ]; do
+  bw get item "$BW_ITEM" | jq -r '.notes' | base64 -d > secrets/secret.key
+
+  if test -s secrets/secret.key ; then
+    exit 0
+  fi
+  echo 'key not written, retrying'
+  retries=$((retries - 1))
+done
+exit 1
