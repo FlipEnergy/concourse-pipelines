@@ -47,6 +47,6 @@ jobs:
     - across:
       - var: branch
         values: ((.:branches))
-      set_pipeline: k8s-homelab-branch-diff
+      set_pipeline: k8s-homelab-diff-((.:branch.name))
       file: concourse-pipelines-repo/compiled-pipelines/diff-k8s-homelab.yml
       vars: {branch: ((.:branch.name))}

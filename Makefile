@@ -17,7 +17,7 @@ personal-website-pipeline:
 	cat common/reusable-blocks.yml personal-website/personal-website.yml | fly -t homelab set-pipeline -n -p personal-website -c - -l common/vars/secrets.dec.yml -l common/vars/vars.yml
 
 branch-tracker-k8s-homelab-pipeline:
-	cat common/reusable-blocks.yml k8s-homelab/tracker.yml | fly -t homelab set-pipeline -n -p k8s-homelab-branch-tracker -c - -l common/vars/secrets.dec.yml -l common/vars/vars.yml
+	cat common/reusable-blocks.yml k8s-homelab/branch-tracker.yml | fly -t homelab set-pipeline -n -p k8s-homelab-branch-tracker -c - -l common/vars/secrets.dec.yml -l common/vars/vars.yml
 
 deploy-k8s-homelab-pipeline:
 	cat common/reusable-blocks.yml k8s-homelab/common.yml k8s-homelab/deploy-k8s-homelab.yml | fly -t homelab set-pipeline -n -p deploy-k8s-homelab -c - -l common/vars/secrets.dec.yml -l common/vars/vars.yml
