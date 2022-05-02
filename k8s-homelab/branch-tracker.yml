@@ -77,7 +77,7 @@ jobs:
           max_in_flight: all
         set_pipeline: k8s-homelab-diff
         file: concourse-pipelines-repo/compiled-pipelines/diff-k8s-homelab.yml
-        vars:
+        instance_vars:
           branch: ((.:branch.name))
         var_files:
           - secrets/secrets.yml
