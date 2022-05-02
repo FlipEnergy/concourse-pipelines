@@ -9,7 +9,9 @@ resources:
     type: git-branches
     icon: github
     source:
+      <<: *github-creds
       uri: https://github.com/FlipEnergy/k8s-homelab.git
+      branch_regex: ^(?!main$).*
 
   - *concourse-pipelines-repo
 
@@ -73,7 +75,7 @@ jobs:
         - var: branch
           values: ((.:branches))
           max_in_flight: all
-        set_pipeline: k8s-homelab-diff-((.:branch.name))
+        set_pipeline: k8s-homelab-diff
         file: concourse-pipelines-repo/compiled-pipelines/diff-k8s-homelab.yml
         vars:
           branch: ((.:branch.name))
