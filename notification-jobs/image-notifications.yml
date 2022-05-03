@@ -56,7 +56,7 @@ build_message_config: &build_message_config
     path: sh
     args:
       - -ec
-      - |
+      - >
         echo ":new: **[${IMAGE_NAME}" 'image tag](${BUILD_URL})**' $(cat ${RESOURCE_DIR}/tag) > message/message.txt
 
 discord_notification: &discord_notification

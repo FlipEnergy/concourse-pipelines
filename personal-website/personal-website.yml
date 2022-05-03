@@ -54,7 +54,7 @@ jobs:
             path: sh
             args:
               - -ec
-              - |
+              - >
                 cd flipenergy && hugo && cp -r public ../public
 
       - task: build-image

@@ -88,10 +88,10 @@ build_image_config: &build_image_config
     path: sh
     args:
       - -ec
-      - |
-        echo VERSION=$(cat ${VERSION_DIR_PATH}/${VERSION_FILE}) > build_args_file \
-          && export CONTEXT=${CI_REPO_DIR}/${DOCKER_CONTEXT_DIR} \
-          && build
+      - >
+        echo VERSION=$(cat ${VERSION_DIR_PATH}/${VERSION_FILE}) > build_args_file &&
+        export CONTEXT=${CI_REPO_DIR}/${DOCKER_CONTEXT_DIR} &&
+        build
 
 put_image_params: &put_image_params
   image: image/image.tar
