@@ -68,7 +68,7 @@ jobs:
             path: /bin/sh
             args:
               - -c
-              - mkdir -p compiled-pipelines && cat common/reusable-blocks.yml k8s-homelab/common.yml k8s-homelab/diff-k8s-homelab.yml > compiled-pipelines/diff-k8s-homelab.yml
+              - mkdir -p compiled-pipelines && cat common/reusable-blocks.yml k8s-homelab/common.yml k8s-homelab/pipeline-templates/diff-k8s-homelab.yml > compiled-pipelines/diff-k8s-homelab.yml
             dir: concourse-pipelines-repo
 
       - across:
