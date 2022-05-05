@@ -11,6 +11,12 @@ resource_types:
 resources:
   - *discord-general
 
+  - name: &ihatemoney_resource ihatemoney-docker-repo
+    <<: *resource_options
+    source:
+      <<: *docker-creds
+      repository: ihatemoney/ihatemoney
+
   - name: &oci_resource oci-build-task-docker-repo
     <<: *resource_options
     source:
@@ -66,6 +72,21 @@ discord_notification: &discord_notification
 # end job templates
 
 jobs:
+  - name: ihatemoney
+    plan:
+      - get: *ihatemoney_resource
+        <<: *get_options
+
+      - task: build-message
+        config:
+          <<: *build_message_config
+          inputs:
+            - name: *ihatemoney_resource
+          params:
+            IMAGE_NAME: ihatemoney
+            RESOURCE_DIR: *ihatemoney_resource
+      - *discord_notification
+
   - name: oci-build-task
     plan:
       - get: *oci_resource
