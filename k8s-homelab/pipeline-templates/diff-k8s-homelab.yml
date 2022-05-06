@@ -1,4 +1,6 @@
 resources:
+  - *discord-general
+
   - name: k8s-homelab-repo
     type: git
     icon: github
@@ -25,6 +27,8 @@ jobs:
             KUBE_CONTEXT: homelab
             REPO_DIR: k8s-homelab-repo
 
+    <<: *job-notifications
+
   - name: diff-oracle
     serial: true
     plan:
@@ -39,3 +43,5 @@ jobs:
             ACTION: -show-diff
             KUBE_CONTEXT: oracle
             REPO_DIR: k8s-homelab-repo
+
+    <<: *job-notifications
