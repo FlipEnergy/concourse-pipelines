@@ -6,10 +6,9 @@ resource_types:
       tag: latest
 
 # begin resource templates
-artifacthub-source: &artifacthub-source
-  repository_name: k8s-at-home
-  api_key: ((artifacthub_key))
-
+artifacthub-defaults: &artifacthub-defaults
+  type: artifacthub
+  check_every: 4h
 # end resource templates
 
 resources:
@@ -29,17 +28,125 @@ resources:
     source:
       uri: https://github.com/FlipEnergy/k8s-homelab.git
       <<: *github-creds
-      git_config:
-        - name: user.name
-          value: Concourse Bot
-        - name: user.email
-          value: dennis.zhang.nrg@gmail.com
+
+  - name: concourse
+    <<: *artifacthub-defaults
+    source:
+      repository_name: concourse
+      api_key: ((artifacthub_key))
+      package_name: concourse
+
+  - name: cryptofolio
+    <<: *artifacthub-defaults
+    source:
+      repository_name: k8s-at-home
+      api_key: ((artifacthub_key))
+      package_name: cryptofolio
 
   - name: freshrss
-    type: artifacthub
+    <<: *artifacthub-defaults
     source:
-      <<: *artifacthub-source
+      repository_name: k8s-at-home
+      api_key: ((artifacthub_key))
       package_name: freshrss
+
+  - name: haste
+    <<: *artifacthub-defaults
+    source:
+      repository_name: k8s-at-home
+      api_key: ((artifacthub_key))
+      package_name: haste-server
+
+  - name: ihatemoney
+    <<: *artifacthub-defaults
+    source:
+      repository_name: k8s-at-home
+      api_key: ((artifacthub_key))
+      package_name: ihatemoney
+
+  - name: influxdb2
+    <<: *artifacthub-defaults
+    source:
+      repository_name: influxdata
+      api_key: ((artifacthub_key))
+      package_name: influxdb2
+
+  - name: ingress-nginx
+    <<: *artifacthub-defaults
+    source:
+      repository_name: ingress-nginx
+      api_key: ((artifacthub_key))
+      package_name: ingress-nginx
+
+  - name: jellyfin
+    <<: *artifacthub-defaults
+    source:
+      repository_name: k8s-at-home
+      api_key: ((artifacthub_key))
+      package_name: jellyfin
+
+  - name: kube-ops-view
+    <<: *artifacthub-defaults
+    source:
+      repository_name: k8s-at-home
+      api_key: ((artifacthub_key))
+      package_name: kube-ops-view
+
+  - name: k8s-dashboard
+    <<: *artifacthub-defaults
+    source:
+      repository_name: k8s-dashboard
+      api_key: ((artifacthub_key))
+      package_name: kubernetes-dashboard
+
+  - name: owncast
+    <<: *artifacthub-defaults
+    source:
+      repository_name: k8s-at-home
+      api_key: ((artifacthub_key))
+      package_name: owncast
+
+  - name: paperless
+    <<: *artifacthub-defaults
+    source:
+      repository_name: k8s-at-home
+      api_key: ((artifacthub_key))
+      package_name: paperless
+
+  - name: postgresql
+    <<: *artifacthub-defaults
+    source:
+      repository_name: bitnami
+      api_key: ((artifacthub_key))
+      package_name: postgresql
+
+  - name: redis
+    <<: *artifacthub-defaults
+    source:
+      repository_name: bitnami
+      api_key: ((artifacthub_key))
+      package_name: redis
+
+  - name: syncthing
+    <<: *artifacthub-defaults
+    source:
+      repository_name: k8s-at-home
+      api_key: ((artifacthub_key))
+      package_name: syncthing
+
+  - name: vaultwarden
+    <<: *artifacthub-defaults
+    source:
+      repository_name: k8s-at-home
+      api_key: ((artifacthub_key))
+      package_name: vaultwarden
+
+  - name: wikijs
+    <<: *artifacthub-defaults
+    source:
+      repository_name: k8s-at-home
+      api_key: ((artifacthub_key))
+      package_name: wikijs
 
 # begin job templates
 update-helmsman-dsf-config: &update-helmsman-dsf-config
@@ -56,8 +163,15 @@ update-helmsman-dsf-config: &update-helmsman-dsf-config
     args:
       - -c
       - |
+
+        ls chart/version
         version=$(cat chart/version)
-        yq -i ".apps.${CHART}.version = \"${version}\"" "k8s-homelab-repo-pull-main/${CONTEXT}.yaml"
+
+        echo "setting ${CHART} to ${version}"
+
+        for context in $CONTEXTS; do
+          yq -i ".apps.${CHART}.version = \"${version}\"" "k8s-homelab-repo-pull-main/${context}.yaml"
+        done
 
 git-commit-config: &git-commit-config
   platform: linux
@@ -80,11 +194,79 @@ git-commit-config: &git-commit-config
       - -c
       - |
         ../concourse-pipelines-repo/common/scripts/setup-and-git-add.sh
-        git commit -m "${CHART} $(cat ../${CHART}/version)"
 
+        message="${CHART} $(cat ../chart/version)"
+        echo "Commit message: ${message}"
+        git commit -m "$message"
 # end job templates
 
 jobs:
+  - name: concourse
+    plan:
+      - in_parallel:
+        - get: concourse
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: concourse
+        output_mapping:
+          chart: concourse
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: concourse
+            CONTEXTS: homelab
+
+      - task: git-commit
+        input_mapping:
+          chart: concourse
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: concourse
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: concourse
+          force: true
+
+  - name: cryptofolio
+    plan:
+      - in_parallel:
+        - get: cryptofolio
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: cryptofolio
+        output_mapping:
+          chart: cryptofolio
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: cryptofolio
+            CONTEXTS: homelab
+
+      - task: git-commit
+        input_mapping:
+          chart: cryptofolio
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: cryptofolio
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: cryptofolio
+          force: true
+
   - name: freshrss
     plan:
       - in_parallel:
@@ -102,7 +284,7 @@ jobs:
           <<: *update-helmsman-dsf-config
           params:
             CHART: freshrss
-            CONTEXT: homelab
+            CONTEXTS: homelab
 
       - task: git-commit
         input_mapping:
@@ -116,3 +298,466 @@ jobs:
         params:
           repository: k8s-homelab-repo-pull-main
           branch: freshrss
+          force: true
+
+  - name: haste
+    plan:
+      - in_parallel:
+        - get: haste
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: haste
+        output_mapping:
+          chart: haste
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: haste
+            CONTEXTS: oracle
+
+      - task: git-commit
+        input_mapping:
+          chart: haste
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: haste
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: haste
+          force: true
+
+  - name: ihatemoney
+    plan:
+      - in_parallel:
+        - get: ihatemoney
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: ihatemoney
+        output_mapping:
+          chart: ihatemoney
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: ihatemoney
+            CONTEXTS: homelab
+
+      - task: git-commit
+        input_mapping:
+          chart: ihatemoney
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: ihatemoney
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: ihatemoney
+          force: true
+
+  - name: influxdb2
+    plan:
+      - in_parallel:
+        - get: influxdb2
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: influxdb2
+        output_mapping:
+          chart: influxdb2
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: influxdb2
+            CONTEXTS: oracle
+
+      - task: git-commit
+        input_mapping:
+          chart: influxdb2
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: influxdb2
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: influxdb2
+          force: true
+
+  - name: ingress-nginx
+    plan:
+      - in_parallel:
+        - get: ingress-nginx
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: ingress-nginx
+        output_mapping:
+          chart: ingress-nginx
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: ingress-nginx
+            CONTEXTS: homelab oracle
+
+      - task: git-commit
+        input_mapping:
+          chart: ingress-nginx
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: ingress-nginx
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: ingress-nginx
+          force: true
+
+  - name: jellyfin
+    plan:
+      - in_parallel:
+        - get: jellyfin
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: jellyfin
+        output_mapping:
+          chart: jellyfin
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: jellyfin
+            CONTEXTS: homelab
+
+      - task: git-commit
+        input_mapping:
+          chart: jellyfin
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: jellyfin
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: jellyfin
+          force: true
+
+  - name: kube-ops-view
+    plan:
+      - in_parallel:
+        - get: kube-ops-view
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: kube-ops-view
+        output_mapping:
+          chart: kube-ops-view
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: kube-ops-view
+            CONTEXTS: homelab
+
+      - task: git-commit
+        input_mapping:
+          chart: kube-ops-view
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: kube-ops-view
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: kube-ops-view
+          force: true
+
+  - name: k8s-dashboard
+    plan:
+      - in_parallel:
+        - get: k8s-dashboard
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: k8s-dashboard
+        output_mapping:
+          chart: k8s-dashboard
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: k8s-dashboard
+            CONTEXTS: homelab
+
+      - task: git-commit
+        input_mapping:
+          chart: k8s-dashboard
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: k8s-dashboard
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: k8s-dashboard
+          force: true
+
+  - name: owncast
+    plan:
+      - in_parallel:
+        - get: owncast
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: owncast
+        output_mapping:
+          chart: owncast
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: owncast
+            CONTEXTS: homelab
+
+      - task: git-commit
+        input_mapping:
+          chart: owncast
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: owncast
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: owncast
+          force: true
+
+  - name: paperless
+    plan:
+      - in_parallel:
+        - get: paperless
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: paperless
+        output_mapping:
+          chart: paperless
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: paperless
+            CONTEXTS: homelab
+
+      - task: git-commit
+        input_mapping:
+          chart: paperless
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: paperless
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: paperless
+          force: true
+
+  - name: postgresql
+    plan:
+      - in_parallel:
+        - get: postgresql
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: postgresql
+        output_mapping:
+          chart: postgresql
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: postgresql
+            CONTEXTS: homelab
+
+      - task: git-commit
+        input_mapping:
+          chart: postgresql
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: postgresql
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: postgresql
+          force: true
+
+  - name: redis
+    plan:
+      - in_parallel:
+        - get: redis
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: redis
+        output_mapping:
+          chart: redis
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: redis
+            CONTEXTS: homelab
+
+      - task: git-commit
+        input_mapping:
+          chart: redis
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: redis
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: redis
+          force: true
+
+  - name: syncthing
+    plan:
+      - in_parallel:
+        - get: syncthing
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: syncthing
+        output_mapping:
+          chart: syncthing
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: syncthing
+            CONTEXTS: homelab
+
+      - task: git-commit
+        input_mapping:
+          chart: syncthing
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: syncthing
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: syncthing
+          force: true
+
+  - name: vaultwarden
+    plan:
+      - in_parallel:
+        - get: vaultwarden
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: vaultwarden
+        output_mapping:
+          chart: vaultwarden
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: vaultwarden
+            CONTEXTS: homelab
+
+      - task: git-commit
+        input_mapping:
+          chart: vaultwarden
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: vaultwarden
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: vaultwarden
+          force: true
+
+  - name: wikijs
+    plan:
+      - in_parallel:
+        - get: wikijs
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: wikijs
+        output_mapping:
+          chart: wikijs
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: wikijs
+            CONTEXTS: homelab
+
+      - task: git-commit
+        input_mapping:
+          chart: wikijs
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: wikijs
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: wikijs
+          force: true
