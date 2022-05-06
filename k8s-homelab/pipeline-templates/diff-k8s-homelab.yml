@@ -14,6 +14,22 @@ resources:
 
   - *concourse-pipelines-repo
 
+# begin job templates
+notify-branch-failure: &notify-branch-failure
+  put: discord-general
+  params:
+    message: "**FAILED** :boom: **[${BUILD_PIPELINE_NAME}/((branch))/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL}?vars.branch=\"((branch))\")**"
+
+branch-job-notifications: &branch-job-notifications
+  on_success:
+    put: discord-general
+    params:
+      message: "**SUCCESS** :rocket: **[${BUILD_PIPELINE_NAME}/((branch))/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})?vars.branch=\"((branch))\")**"
+  on_error: *notify-branch-failure
+  on_failure: *notify-branch-failure
+
+# end job templates
+
 jobs:
   - name: diff-homelab
     serial: true
@@ -30,7 +46,7 @@ jobs:
             KUBE_CONTEXT: homelab
             REPO_DIR: k8s-homelab-repo
 
-    <<: *job-notifications
+    <<: *branch-job-notifications
 
   - name: diff-oracle
     serial: true
@@ -47,4 +63,4 @@ jobs:
             KUBE_CONTEXT: oracle
             REPO_DIR: k8s-homelab-repo
 
-    <<: *job-notifications
+    <<: *branch-job-notifications
