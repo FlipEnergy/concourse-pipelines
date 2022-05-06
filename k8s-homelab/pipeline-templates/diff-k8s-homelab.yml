@@ -24,7 +24,7 @@ branch-job-notifications: &branch-job-notifications
   on_success:
     put: discord-general
     params:
-      message: "**SUCCESS** :rocket: **[${BUILD_PIPELINE_NAME}/((branch))/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})?vars.branch=\"((branch))\")**"
+      message: "**SUCCESS** :rocket: **[${BUILD_PIPELINE_NAME}/((branch))/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL}?vars.branch=\"((branch))\")**"
   on_error: *notify-branch-failure
   on_failure: *notify-branch-failure
 
