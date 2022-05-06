@@ -82,7 +82,7 @@ oci-build-image-resource: &oci-build-image-resource
   source:
     <<: *docker-creds
     repository: concourse/oci-build-task
-    tag: 0.9.0
+    tag: 0.10.0
 
 yq-image-resource: &yq-image-resource
   type: registry-image
