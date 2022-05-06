@@ -1,0 +1,118 @@
+resource_types:
+  - name: artifacthub
+    type: docker-image
+    source:
+      repository: ghcr.io/hdisysteme/artifacthub-resource
+      tag: latest
+
+# begin resource templates
+artifacthub-source: &artifacthub-source
+  repository_name: k8s-at-home
+  api_key: ((artifacthub_key))
+
+# end resource templates
+
+resources:
+  - *concourse-pipelines-repo
+
+  - name: k8s-homelab-repo-pull-main
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/k8s-homelab.git
+      <<: *github-creds
+      branch: main
+
+  - name: k8s-homelab-repo-push-branch
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/k8s-homelab.git
+      <<: *github-creds
+      git_config:
+        - name: user.name
+          value: Concourse Bot
+        - name: user.email
+          value: dennis.zhang.nrg@gmail.com
+
+  - name: freshrss
+    type: artifacthub
+    source:
+      <<: *artifacthub-source
+      package_name: freshrss
+
+# begin job templates
+update-helmsman-dsf-config: &update-helmsman-dsf-config
+  platform: linux
+  image_resource: *yq-image-resource
+  inputs:
+    - name: chart
+    - name: k8s-homelab-repo-pull-main
+  outputs:
+    - name: chart
+    - name: k8s-homelab-repo-pull-main
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        version=$(cat chart/version)
+        yq -i ".apps.${CHART}.version = \"${version}\"" "k8s-homelab-repo-pull-main/${CONTEXT}.yaml"
+
+git-commit-config: &git-commit-config
+  platform: linux
+  image_resource:
+    type: registry-image
+    source:
+      <<: *docker-creds
+      repository: bitnami/git
+      tag: latest
+  inputs:
+    - name: chart
+    - name: concourse-pipelines-repo
+    - name: k8s-homelab-repo-pull-main
+  outputs:
+    - name: k8s-homelab-repo-pull-main
+  run:
+    dir: k8s-homelab-repo-pull-main
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        ../concourse-pipelines-repo/common/scripts/setup-and-git-add.sh
+        git commit -m "${CHART} $(cat ../${CHART}/version)"
+
+# end job templates
+
+jobs:
+  - name: freshrss
+    plan:
+      - in_parallel:
+        - get: freshrss
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: freshrss
+        output_mapping:
+          chart: freshrss
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: freshrss
+            CONTEXT: homelab
+
+      - task: git-commit
+        input_mapping:
+          chart: freshrss
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: freshrss
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: freshrss

@@ -1,6 +1,6 @@
 # main commands
 
-set-all-pipelines: decrypt-secrets personal-website-pipeline branch-tracker-k8s-homelab-pipeline deploy-k8s-homelab-pipeline images-build-pipeline image-notifications-pipeline misc-notifications-pipeline clean-decrypted-files
+set-all-pipelines: decrypt-secrets personal-website-pipeline artifacthub-to-branch-pipeline branch-tracker-k8s-homelab-pipeline deploy-k8s-homelab-pipeline images-build-pipeline image-notifications-pipeline misc-notifications-pipeline clean-decrypted-files
 
 login:
 	fly -t homelab login -kb
@@ -15,6 +15,9 @@ clean-decrypted-files:
 
 personal-website-pipeline:
 	cat common/reusable-blocks.yml personal-website/personal-website.yml | fly -t homelab set-pipeline -n -p personal-website -c - -l common/vars/secrets.dec.yml
+
+artifacthub-to-branch-pipeline:
+	cat common/reusable-blocks.yml k8s-homelab/artifacthub-to-branch.yml | fly -t homelab set-pipeline -n -p artifacthub-to-branch -c - -l common/vars/secrets.dec.yml
 
 branch-tracker-k8s-homelab-pipeline:
 	cat common/reusable-blocks.yml k8s-homelab/branch-tracker.yml | fly -t homelab set-pipeline -n -p k8s-homelab-branch-tracker -c - -l common/vars/secrets.dec.yml
