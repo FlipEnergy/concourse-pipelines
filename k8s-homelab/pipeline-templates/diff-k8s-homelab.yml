@@ -1,3 +1,6 @@
+resource_types:
+  - *webhook-resource-type
+
 resources:
   - *discord-general
 
