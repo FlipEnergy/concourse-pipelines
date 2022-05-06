@@ -2,7 +2,7 @@ resource_types:
   - *webhook-resource-type
 
 resources:
-  - *discord-general
+  - *discord-deploy
 
   # Repo to pull for building image
   - name: &site-repo personal-website-repo
@@ -77,8 +77,8 @@ jobs:
           image: image/image.tar
           additional_tags: personal-website-repo/.git/short_ref
 
-    on_error: *notify-failure
-    on_failure: *notify-failure
+    on_error: *notify-deploy-failure
+    on_failure: *notify-deploy-failure
 
   - name: deploy-website-to-k8s
     serial: true
@@ -107,4 +107,4 @@ jobs:
           run:
             path: concourse-pipelines-repo/personal-website/deploy-to-k8s.sh
 
-    <<: *job-notifications
+    <<: *deploy-job-notifications

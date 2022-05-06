@@ -14,7 +14,13 @@ resource_types:
   - *webhook-resource-type
 
 resources:
-  - *discord-healthy-habits
+  - name: discord-healthy-habits
+    type: webhook-resource-type
+    icon: bell
+    source:
+        adapter: DiscordAdapter
+        url: ((discord_healthy_habits_webhook_url))
+    check_every: never
 
   - name: &hourly hourly
     <<: *resource_options
