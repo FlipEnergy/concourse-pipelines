@@ -9,7 +9,7 @@ mkdir -p secrets
 
 echo "Getting secret key..."
 
-retries=3
+retries=5
 while [ "$retries" -gt 0 ]; do
   bw get item "$BW_ITEM" | jq -r '.notes' | base64 -d > secrets/secret.key
 
@@ -18,5 +18,6 @@ while [ "$retries" -gt 0 ]; do
   fi
   echo 'key not written, retrying'
   retries=$((retries - 1))
+  sleep 1
 done
 exit 1
