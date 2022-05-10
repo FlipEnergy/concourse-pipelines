@@ -127,13 +127,6 @@ resources:
       api_key: ((artifacthub_key))
       package_name: redis
 
-  - name: syncthing
-    <<: *artifacthub-defaults
-    source:
-      repository_name: k8s-at-home
-      api_key: ((artifacthub_key))
-      package_name: syncthing
-
   - name: vaultwarden
     <<: *artifacthub-defaults
     source:
@@ -661,39 +654,6 @@ jobs:
         params:
           repository: k8s-homelab-repo-pull-main
           branch: redis
-          force: true
-
-  - name: syncthing
-    plan:
-      - in_parallel:
-        - get: syncthing
-          trigger: true
-        - get: k8s-homelab-repo-pull-main
-        - get: concourse-pipelines-repo
-
-      - task: update-helmsman-dsf
-        input_mapping:
-          chart: syncthing
-        output_mapping:
-          chart: syncthing
-        config:
-          <<: *update-helmsman-dsf-config
-          params:
-            CHART: syncthing
-            CONTEXTS: homelab
-
-      - task: git-commit
-        input_mapping:
-          chart: syncthing
-        config:
-          <<: *git-commit-config
-          params:
-            CHART: syncthing
-
-      - put: k8s-homelab-repo-push-branch
-        params:
-          repository: k8s-homelab-repo-pull-main
-          branch: syncthing
           force: true
 
   - name: vaultwarden
