@@ -13,13 +13,7 @@ resource_types:
   - *webhook-resource-type
 
 resources:
-  - name: discord-image-build
-    type: webhook-resource-type
-    icon: bell
-    source:
-        adapter: DiscordAdapter
-        url: ((discord_image_webhook_url))
-    check_every: never
+  - *discord-image
 
   - name: &ci_repo container-images-repo
     type: git
@@ -104,13 +98,13 @@ put_image_params: &put_image_params
 
 # notifications
 notify-failure: &notify-failure
-  put: discord-image-build
+  put: discord-image
   params:
     message: "**FAILED** :boom: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
 
 job-notifications: &job-notifications
   on_success:
-    put: discord-image-build
+    put: discord-image
     params:
       message: "**SUCCESS** :rocket: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
   on_error: *notify-failure

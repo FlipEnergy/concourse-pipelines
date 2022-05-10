@@ -38,6 +38,15 @@ discord-info: &discord-info
       url: ((discord_info_webhook_url))
   check_every: never
 
+discord-image: &discord-image
+  name: discord-image
+  type: webhook-resource-type
+  icon: bell
+  source:
+      adapter: DiscordAdapter
+      url: ((discord_image_webhook_url))
+  check_every: never
+
 concourse-pipelines-repo: &concourse-pipelines-repo
   name: concourse-pipelines-repo
   type: git
