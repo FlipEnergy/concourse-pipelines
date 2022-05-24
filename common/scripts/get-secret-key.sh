@@ -9,7 +9,9 @@ echo "Getting secret key..."
 
 retries=10
 while [ "$retries" -gt 0 ]; do
-  export BW_SESSION=`bw login "$BW_USERNAME" "$BW_PASSWORD" --raw`
+  if [ -z "$BW_SESSION" ]; then
+    export BW_SESSION=`bw login "$BW_USERNAME" "$BW_PASSWORD" --raw`
+  fi
 
   bw get item "$BW_ITEM" | jq -r '.notes' | base64 -d > secrets/secret.key
 
