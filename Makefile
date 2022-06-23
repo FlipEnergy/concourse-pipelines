@@ -3,7 +3,7 @@
 set-all-pipelines: decrypt-secrets personal-website-pipeline artifacthub-to-branch-pipeline branch-tracker-k8s-homelab-pipeline deploy-k8s-homelab-pipeline images-build-pipeline image-notifications-pipeline misc-notifications-pipeline clean-decrypted-files
 
 login:
-	fly -t homelab login -kb
+	fly -t homelab login -kb -c https://concourse.tgp
 
 # sub-commands
 
