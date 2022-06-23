@@ -188,7 +188,7 @@ git-commit-config: &git-commit-config
       - |
         ../concourse-pipelines-repo/common/scripts/setup-and-git-add.sh
 
-        message="${CHART} $(cat ../chart/version)"
+        message="${CHART} chart version $(cat ../chart/version)"
         echo "Commit message: ${message}"
         git commit -m "$message"
 # end job templates
