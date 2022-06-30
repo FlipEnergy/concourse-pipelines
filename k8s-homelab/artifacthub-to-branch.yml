@@ -99,6 +99,13 @@ resources:
       api_key: ((artifacthub_key))
       package_name: kubernetes-dashboard
 
+  - name: nextcloud
+    <<: *artifacthub-defaults
+    source:
+      repository_name: nextcloud
+      api_key: ((artifacthub_key))
+      package_name: nextcloud
+
   - name: owncast
     <<: *artifacthub-defaults
     source:
@@ -522,6 +529,39 @@ jobs:
         params:
           repository: k8s-homelab-repo-pull-main
           branch: k8s-dashboard
+          force: true
+
+  - name: nextcloud
+    plan:
+      - in_parallel:
+        - get: nextcloud
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: nextcloud
+        output_mapping:
+          chart: nextcloud
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: nextcloud
+            CONTEXTS: homelab
+
+      - task: git-commit
+        input_mapping:
+          chart: nextcloud
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: nextcloud
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: nextcloud
           force: true
 
   - name: owncast
