@@ -107,7 +107,6 @@ jobs:
                 git log -n 1 origin/((branch))
                 git cherry-pick origin/((branch))
 
-
       - put: k8s-homelab-repo-main
         params:
           repository: k8s-homelab-repo-main
