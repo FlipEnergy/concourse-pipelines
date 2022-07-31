@@ -105,7 +105,7 @@ jobs:
                 # git fetch
                 git cherry-pick origin/((branch))
 
-      - put: k8s-homelab-repo-push-branch
+      - put: k8s-homelab-repo-main
         params:
           repository: k8s-homelab-repo-main
           branch: main
