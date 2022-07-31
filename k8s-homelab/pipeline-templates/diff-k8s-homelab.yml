@@ -78,6 +78,7 @@ jobs:
     plan:
       - in_parallel:
         - get: concourse-pipelines-repo
+          passed: [diff-homelab, diff-oracle]
         - get: k8s-homelab-repo-main
 
       - task: git-cherry-pick
