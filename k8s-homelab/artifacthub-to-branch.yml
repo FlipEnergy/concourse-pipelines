@@ -193,7 +193,10 @@ git-commit-config: &git-commit-config
     args:
       - -c
       - |
-        ../concourse-pipelines-repo/common/scripts/setup-and-git-add.sh
+        ../concourse-pipelines-repo/common/scripts/setup-git-config.sh
+
+        git --no-pager diff
+        git add .
 
         message="${CHART} chart version $(cat ../chart/version)"
         echo "Commit message: ${message}"

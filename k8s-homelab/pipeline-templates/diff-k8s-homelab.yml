@@ -100,9 +100,12 @@ jobs:
             args:
               - -c
               - |
+                ../concourse-pipelines-repo/common/scripts/setup-git-config.sh
+
                 git fetch origin ((branch)):origin/((branch))
                 git log -n 1 origin/((branch))
                 git cherry-pick origin/((branch))
+
 
       - put: k8s-homelab-repo-main
         params:
