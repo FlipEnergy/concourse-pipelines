@@ -5,6 +5,9 @@ set-all-pipelines: decrypt-secrets personal-website-pipeline artifacthub-to-bran
 login:
 	fly -t homelab login -kb -c https://concourse.tgp
 
+sync:
+	fly -t homelab sync
+
 # sub-commands
 
 decrypt-secrets:

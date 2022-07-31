@@ -1,9 +1,9 @@
-get_in_parrallel: &get_in_parrallel
+get-k8s-homelab-in-parrallel: &get-k8s-homelab-in-parrallel
   - get: k8s-homelab-repo
     trigger: true
   - get: concourse-pipelines-repo
 
-helmsman_task_config: &helmsman_task_config
+helmsman-task-config: &helmsman-task-config
   platform: linux
   image_resource: *helmsman-image-resource
   inputs:

@@ -12,6 +12,14 @@ resources:
       branch: ((branch))
       <<: *github-creds
 
+  - name: k8s-homelab-repo-main
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/k8s-homelab.git
+      branch: main
+      <<: *github-creds
+
   - *concourse-pipelines-repo
 
 # begin job templates
@@ -34,13 +42,13 @@ jobs:
   - name: diff-homelab
     serial: true
     plan:
-      - in_parallel: *get_in_parrallel
+      - in_parallel: *get-k8s-homelab-in-parrallel
 
       - *get-secret-key-task
 
       - task: diff-homelab-k8s
         config:
-          <<: *helmsman_task_config
+          <<: *helmsman-task-config
           params:
             ACTION: -show-diff
             KUBE_CONTEXT: homelab
@@ -51,16 +59,53 @@ jobs:
   - name: diff-oracle
     serial: true
     plan:
-      - in_parallel: *get_in_parrallel
+      - in_parallel: *get-k8s-homelab-in-parrallel
 
       - *get-secret-key-task
 
       - task: diff-oracle-k8s
         config:
-          <<: *helmsman_task_config
+          <<: *helmsman-task-config
           params:
             ACTION: -show-diff
             KUBE_CONTEXT: oracle
             REPO_DIR: k8s-homelab-repo
 
     <<: *branch-job-notifications
+
+  - name: cherry-pick-to-main
+    serial: true
+    plan:
+      - in_parallel:
+        - get: concourse-pipelines-repo
+        - get: k8s-homelab-repo
+          passed: [diff-homelab, diff-oracle]
+
+      - task: git-cherry-pick
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              <<: *docker-creds
+              repository: bitnami/git
+              tag: latest
+          inputs:
+            - name: concourse-pipelines-repo
+            - name: k8s-homelab-repo-main
+          outputs:
+            - name: k8s-homelab-repo-pull-main
+          run:
+            dir: k8s-homelab-repo-pull-main
+            path: /bin/sh
+            args:
+              - -c
+              - |
+                ../concourse-pipelines-repo/common/scripts/setup-and-git-add.sh
+                # git fetch
+                git cherry-pick origin/((branch))
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-main
+          branch: main

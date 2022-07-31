@@ -22,13 +22,13 @@ jobs:
   - name: deploy-homelab
     serial: true
     plan:
-      - in_parallel: *get_in_parrallel
+      - in_parallel: *get-k8s-homelab-in-parrallel
 
       - *get-secret-key-task
 
       - task: deploy-homelab-k8s
         config:
-          <<: *helmsman_task_config
+          <<: *helmsman-task-config
           params:
             ACTION: -apply
             KUBE_CONTEXT: homelab
@@ -39,13 +39,13 @@ jobs:
   - name: deploy-oracle
     serial: true
     plan:
-      - in_parallel: *get_in_parrallel
+      - in_parallel: *get-k8s-homelab-in-parrallel
 
       - *get-secret-key-task
 
       - task: deploy-oracle-k8s
         config:
-          <<: *helmsman_task_config
+          <<: *helmsman-task-config
           params:
             ACTION: -apply
             KUBE_CONTEXT: oracle
