@@ -91,6 +91,7 @@ jobs:
               repository: bitnami/git
               tag: latest
           inputs:
+            - name: concourse-pipelines-repo
             - name: k8s-homelab-repo-main
           outputs:
             - name: k8s-homelab-repo-main
