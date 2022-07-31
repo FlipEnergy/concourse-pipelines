@@ -38,6 +38,22 @@ resources:
       repository: flipenergy/bitwarden-cli
       tag: latest
 
+  # nextcloud-news-updater
+  - name: &nextcloud_news_updater_tag nextcloud-news-updater-tag
+    type: git
+    icon: github
+    source:
+      <<: *github-creds
+      uri: https://github.com/nextcloud/news-updater.git
+      tag_regex: ^(\d+\.)?(\d+\.)?(\*|\d+)$
+
+  - name: &nextcloud_news_updater_docker nextcloud-news-updater-docker-repo
+    <<: *image_resource_options
+    source:
+      <<: *docker-creds
+      repository: flipenergy/nextcloud-news-updater
+      tag: latest
+
   # Restic-with-curl
   - name: &restic_release restic-upstream-repo
     <<: *image_resource_options
@@ -89,7 +105,7 @@ build_image_config: &build_image_config
     args:
       - -ec
       - >
-        echo VERSION=$(cat ${VERSION_DIR_PATH}/${VERSION_FILE}) > build_args_file &&
+        echo VERSION=$(egrep -o '([0-9]{1,}\.)+[0-9]{1,}' ${VERSION_DIR_PATH}/${VERSION_FILE}) > build_args_file &&
         export CONTEXT=${CI_REPO_DIR}/${DOCKER_CONTEXT_DIR} &&
         build
 
@@ -138,6 +154,33 @@ jobs:
         params:
           <<: *put_image_params
           additional_tags: bitwarden-cli-github-release/version
+    <<: *job-notifications
+
+  - name: nextcloud-news-updater-image
+    serial: true
+    plan:
+      - in_parallel:
+        - get: *nextcloud_news_updater_tag
+          trigger: true
+        - get: *ci_repo
+
+      - task: build-image
+        privileged: true
+        config:
+          <<: *build_image_config
+          inputs:
+            - name: *nextcloud_news_updater_tag
+            - name: *ci_repo
+          params:
+            <<: *build_image_params
+            DOCKER_CONTEXT_DIR: nextcloud-news-updater
+            VERSION_DIR_PATH: *nextcloud_news_updater_tag
+            VERSION_FILE: .git/ref
+
+      - put: *nextcloud_news_updater_docker
+        params:
+          <<: *put_image_params
+          additional_tags: nextcloud-news-updater-tag/.git/ref
     <<: *job-notifications
 
   - name: restic-image
