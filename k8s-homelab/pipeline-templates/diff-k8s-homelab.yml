@@ -103,6 +103,7 @@ jobs:
               - |
                 ../concourse-pipelines-repo/common/scripts/setup-and-git-add.sh
                 git fetch origin ((branch))
+                git log -n 1 origin/((branch))
                 git cherry-pick origin/((branch))
 
       - put: k8s-homelab-repo-main
