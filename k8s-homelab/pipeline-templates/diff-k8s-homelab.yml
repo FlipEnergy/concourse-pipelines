@@ -78,7 +78,7 @@ jobs:
     plan:
       - in_parallel:
         - get: concourse-pipelines-repo
-        - get: k8s-homelab-repo
+        - get: k8s-homelab-repo-main
           passed: [diff-homelab, diff-oracle]
 
       - task: git-cherry-pick
@@ -94,9 +94,9 @@ jobs:
             - name: concourse-pipelines-repo
             - name: k8s-homelab-repo-main
           outputs:
-            - name: k8s-homelab-repo-pull-main
+            - name: k8s-homelab-repo-main
           run:
-            dir: k8s-homelab-repo-pull-main
+            dir: k8s-homelab-repo-main
             path: /bin/sh
             args:
               - -c
