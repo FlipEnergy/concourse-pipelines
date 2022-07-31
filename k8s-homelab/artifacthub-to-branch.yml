@@ -43,13 +43,6 @@ resources:
       api_key: ((artifacthub_key))
       package_name: cryptofolio
 
-  - name: freshrss
-    <<: *artifacthub-defaults
-    source:
-      repository_name: k8s-at-home
-      api_key: ((artifacthub_key))
-      package_name: freshrss
-
   - name: haste
     <<: *artifacthub-defaults
     source:
@@ -268,39 +261,6 @@ jobs:
         params:
           repository: k8s-homelab-repo-pull-main
           branch: cryptofolio
-          force: true
-
-  - name: freshrss
-    plan:
-      - in_parallel:
-        - get: freshrss
-          trigger: true
-        - get: k8s-homelab-repo-pull-main
-        - get: concourse-pipelines-repo
-
-      - task: update-helmsman-dsf
-        input_mapping:
-          chart: freshrss
-        output_mapping:
-          chart: freshrss
-        config:
-          <<: *update-helmsman-dsf-config
-          params:
-            CHART: freshrss
-            CONTEXTS: homelab
-
-      - task: git-commit
-        input_mapping:
-          chart: freshrss
-        config:
-          <<: *git-commit-config
-          params:
-            CHART: freshrss
-
-      - put: k8s-homelab-repo-push-branch
-        params:
-          repository: k8s-homelab-repo-pull-main
-          branch: freshrss
           force: true
 
   - name: haste
