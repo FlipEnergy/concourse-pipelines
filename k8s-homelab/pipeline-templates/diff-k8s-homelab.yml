@@ -91,7 +91,6 @@ jobs:
               repository: bitnami/git
               tag: latest
           inputs:
-            - name: concourse-pipelines-repo
             - name: k8s-homelab-repo-main
           outputs:
             - name: k8s-homelab-repo-main
@@ -101,8 +100,7 @@ jobs:
             args:
               - -c
               - |
-                ../concourse-pipelines-repo/common/scripts/setup-and-git-add.sh
-                git fetch origin ((branch))
+                git fetch origin ((branch)):origin/((branch))
                 git log -n 1 origin/((branch))
                 git cherry-pick origin/((branch))
 
