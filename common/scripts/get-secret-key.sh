@@ -21,6 +21,6 @@ while [ "$retries" -gt 0 ]; do
   fi
   echo 'key not written, retrying'
   retries=$((retries - 1))
-  sleep 1
+  sleep $((10 - retries))
 done
 exit 1
