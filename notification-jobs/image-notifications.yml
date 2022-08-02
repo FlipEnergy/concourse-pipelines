@@ -29,6 +29,12 @@ resources:
       <<: *docker-creds
       repository: gabekangas/owncast
 
+  - name: &jellyfin_resource jellyfin-docker-repo
+    <<: *resource_options
+    source:
+      <<: *docker-creds
+      repository: jellyfin/jellyfin
+
   - name: &vaultwarden_resource vaultwarden-docker-repo
     <<: *resource_options
     source:
@@ -79,6 +85,21 @@ jobs:
           params:
             IMAGE_NAME: ihatemoney
             RESOURCE_DIR: *ihatemoney_resource
+      - *discord_notification
+
+  - name: jellyfin
+    plan:
+      - get: *jellyfin_resource
+        <<: *get_options
+
+      - task: build-message
+        config:
+          <<: *build_message_config
+          inputs:
+            - name: *jellyfin_resource
+          params:
+            IMAGE_NAME: Jellyfin
+            RESOURCE_DIR: *jellyfin_resource
       - *discord_notification
 
   - name: oci-build-task
