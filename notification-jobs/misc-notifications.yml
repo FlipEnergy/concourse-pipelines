@@ -6,7 +6,7 @@ resource_options: &resource_options
 
 resource_source: &resource_source
   start: 9:30 AM
-  stop: 10:00 PM
+  stop: 9:30 PM
   location: America/Vancouver
 # end resource templates
 
