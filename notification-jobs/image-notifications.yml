@@ -35,6 +35,13 @@ resources:
       <<: *docker-creds
       repository: jellyfin/jellyfin
 
+
+  - name: &soft_serve_resource soft-serve-docker-repo
+    <<: *resource_options
+    source:
+      <<: *docker-creds
+      repository: charmcli/soft-serve
+
   - name: &vaultwarden_resource vaultwarden-docker-repo
     <<: *resource_options
     source:
@@ -134,6 +141,22 @@ jobs:
             IMAGE_NAME: Owncast
             RELEASE_URL: https://github.com/owncast/owncast/releases
             RESOURCE_DIR: *owncast_resource
+      - *discord_notification
+
+  - name: soft-serve
+    plan:
+      - get: *soft_serve_resource
+        <<: *get_options
+
+      - task: build-message
+        config:
+          <<: *build_message_config
+          inputs:
+            - name: *soft_serve_resource
+          params:
+            IMAGE_NAME: soft-serve
+            RELEASE_URL: https://github.com/charmbracelet/soft-serve/releases
+            RESOURCE_DIR: *soft_serve_resource
       - *discord_notification
 
   - name: vaultwarden
