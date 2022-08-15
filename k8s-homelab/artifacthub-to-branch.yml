@@ -29,6 +29,13 @@ resources:
       uri: https://github.com/FlipEnergy/k8s-homelab.git
       <<: *github-creds
 
+  - name: botkube
+    <<: *artifacthub-defaults
+    source:
+      repository_name: infracloudio
+      api_key: ((artifacthub_key))
+      package_name: botkube
+
   - name: concourse
     <<: *artifacthub-defaults
     source:
@@ -197,6 +204,39 @@ git-commit-config: &git-commit-config
 # end job templates
 
 jobs:
+  - name: botkube
+    plan:
+      - in_parallel:
+        - get: botkube
+          trigger: true
+        - get: k8s-homelab-repo-pull-main
+        - get: concourse-pipelines-repo
+
+      - task: update-helmsman-dsf
+        input_mapping:
+          chart: botkube
+        output_mapping:
+          chart: botkube
+        config:
+          <<: *update-helmsman-dsf-config
+          params:
+            CHART: botkube
+            CONTEXTS: homelab oracle
+
+      - task: git-commit
+        input_mapping:
+          chart: botkube
+        config:
+          <<: *git-commit-config
+          params:
+            CHART: botkube
+
+      - put: k8s-homelab-repo-push-branch
+        params:
+          repository: k8s-homelab-repo-pull-main
+          branch: botkube
+          force: true
+
   - name: concourse
     plan:
       - in_parallel:
