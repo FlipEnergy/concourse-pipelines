@@ -163,6 +163,7 @@ update-helmsman-dsf-config: &update-helmsman-dsf-config
     args:
       - -c
       - |
+        set -eu
 
         ls chart/version
         version=$(cat chart/version)
@@ -193,6 +194,8 @@ git-commit-config: &git-commit-config
     args:
       - -c
       - |
+        set -euo pipefail
+
         ../concourse-pipelines-repo/common/scripts/setup-git-config.sh
 
         git --no-pager diff

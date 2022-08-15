@@ -1,0 +1,107 @@
+resources:
+  - name: hourly
+    type: time
+    icon: timer-outline
+    source:
+      interval: 1h
+
+# begin job templates
+git-mirror-config: &git-mirror-config
+  platform: linux
+  image_resource:
+    type: registry-image
+    source:
+      <<: *docker-creds
+      repository: bitnami/git
+      tag: latest
+  outputs:
+    - name: repo
+  run:
+    dir: k8s-homelab-repo-pull
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        set -eu
+
+        mkdir -p ~/.ssh
+        echo "$SSH_KEY" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+
+        git clone --mirror "https://github.com/FlipEnergy/${REPO}.git"
+        cd "${REPO}.git"
+        GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git push --mirror "ssh://soft-serve-git.soft-serve-git/${REPO}"
+# end job templates
+
+jobs:
+  - name: concourse-pipelines
+    plan:
+      - get: hourly
+        trigger: true
+
+      - task: git-mirror
+        config:
+          <<: *git-mirror-config
+          params:
+            REPO: concourse-pipelines
+            SSH_KEY: ((concourse_clone_repo_private_key))
+
+  - name: ansible-playground
+    plan:
+      - get: hourly
+        trigger: true
+
+      - task: git-mirror
+        config:
+          <<: *git-mirror-config
+          params:
+            REPO: ansible-playground
+            SSH_KEY: ((concourse_clone_repo_private_key))
+
+  - name: container-images
+    plan:
+      - get: hourly
+        trigger: true
+
+      - task: git-mirror
+        config:
+          <<: *git-mirror-config
+          params:
+            REPO: container-images
+            SSH_KEY: ((concourse_clone_repo_private_key))
+
+  - name: k8s-homelab
+    plan:
+      - get: hourly
+        trigger: true
+
+      - task: git-mirror
+        config:
+          <<: *git-mirror-config
+          params:
+            REPO: k8s-homelab
+            SSH_KEY: ((concourse_clone_repo_private_key))
+
+  - name: personal-website
+    plan:
+      - get: hourly
+        trigger: true
+
+      - task: git-mirror
+        config:
+          <<: *git-mirror-config
+          params:
+            REPO: personal-website
+            SSH_KEY: ((concourse_clone_repo_private_key))
+
+  - name: tf-playground
+    plan:
+      - get: hourly
+        trigger: true
+
+      - task: git-mirror
+        config:
+          <<: *git-mirror-config
+          params:
+            REPO: tf-playground
+            SSH_KEY: ((concourse_clone_repo_private_key))

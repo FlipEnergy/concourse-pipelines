@@ -47,7 +47,9 @@ jobs:
                 path: /bin/sh
                 args:
                   - -c
-                  - >
+                  - |
+                    set -eu
+
                     concourse-pipelines-repo/common/scripts/import-secret-key.sh &&
                     sops -d --output secrets/secrets.yml concourse-pipelines-repo/common/vars/secrets.enc.yml
 

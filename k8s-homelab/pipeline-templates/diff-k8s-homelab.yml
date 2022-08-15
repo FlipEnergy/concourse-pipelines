@@ -101,6 +101,8 @@ jobs:
             args:
               - -c
               - |
+                set -eu
+
                 ../concourse-pipelines-repo/common/scripts/setup-git-config.sh
 
                 git fetch origin ((branch)):origin/((branch))

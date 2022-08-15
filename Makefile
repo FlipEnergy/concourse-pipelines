@@ -1,6 +1,6 @@
 # main commands
 
-set-all-pipelines: decrypt-secrets personal-website-pipeline artifacthub-to-branch-pipeline branch-tracker-k8s-homelab-pipeline deploy-k8s-homelab-pipeline images-build-pipeline image-notifications-pipeline misc-notifications-pipeline clean-decrypted-files
+set-all-pipelines: decrypt-secrets personal-website-pipeline artifacthub-to-branch-pipeline branch-tracker-k8s-homelab-pipeline deploy-k8s-homelab-pipeline images-build-pipeline image-notifications-pipeline misc-notifications-pipeline clone-repos-pipeline clean-decrypted-files
 
 login:
 	fly -t homelab login -kb -c https://concourse.tgp
@@ -36,6 +36,9 @@ image-notifications-pipeline:
 
 misc-notifications-pipeline:
 	cat common/reusable-blocks.yml notification-jobs/misc-notifications.yml | fly -t homelab set-pipeline -n -p misc-notifications -c - -l common/vars/secrets.dec.yml
+
+clone-repos-pipeline:
+	cat common/reusable-blocks.yml clone-repos/clone-git-repos.yml | fly -t homelab set-pipeline -n -p clone-repos -c - -l common/vars/secrets.dec.yml
 
 save-kube-config:
 	kubectl config view -o json --flatten | sops --input-type json --output-type yaml -e --output common/misc/kube-config.enc.yml /dev/stdin
