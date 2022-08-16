@@ -194,7 +194,7 @@ git-commit-config: &git-commit-config
     args:
       - -c
       - |
-        set -euo pipefail
+        set -eu
 
         ../concourse-pipelines-repo/common/scripts/setup-git-config.sh
 
