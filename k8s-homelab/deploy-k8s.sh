@@ -8,7 +8,7 @@ echo
 
 retries=3
 while [ "$retries" -gt 0 ]; do
-  if helmsman --no-banner -p 3 "$ACTION" -f "${KUBE_CONTEXT}.yaml"; then
+  if helmsman --no-banner -p 5 --update-deps "$ACTION" -f "${KUBE_CONTEXT}.yaml"; then
     exit 0
   fi
   echo
