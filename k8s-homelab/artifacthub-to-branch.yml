@@ -43,27 +43,6 @@ resources:
       api_key: ((artifacthub_key))
       package_name: concourse
 
-  - name: cryptofolio
-    <<: *artifacthub-defaults
-    source:
-      repository_name: k8s-at-home
-      api_key: ((artifacthub_key))
-      package_name: cryptofolio
-
-  - name: haste
-    <<: *artifacthub-defaults
-    source:
-      repository_name: k8s-at-home
-      api_key: ((artifacthub_key))
-      package_name: haste-server
-
-  - name: ihatemoney
-    <<: *artifacthub-defaults
-    source:
-      repository_name: k8s-at-home
-      api_key: ((artifacthub_key))
-      package_name: ihatemoney
-
   - name: influxdb2
     <<: *artifacthub-defaults
     source:
@@ -77,20 +56,6 @@ resources:
       repository_name: ingress-nginx
       api_key: ((artifacthub_key))
       package_name: ingress-nginx
-
-  - name: jellyfin
-    <<: *artifacthub-defaults
-    source:
-      repository_name: k8s-at-home
-      api_key: ((artifacthub_key))
-      package_name: jellyfin
-
-  - name: kube-ops-view
-    <<: *artifacthub-defaults
-    source:
-      repository_name: k8s-at-home
-      api_key: ((artifacthub_key))
-      package_name: kube-ops-view
 
   - name: k8s-dashboard
     <<: *artifacthub-defaults
@@ -106,20 +71,6 @@ resources:
       api_key: ((artifacthub_key))
       package_name: nextcloud
 
-  - name: owncast
-    <<: *artifacthub-defaults
-    source:
-      repository_name: k8s-at-home
-      api_key: ((artifacthub_key))
-      package_name: owncast
-
-  - name: paperless
-    <<: *artifacthub-defaults
-    source:
-      repository_name: k8s-at-home
-      api_key: ((artifacthub_key))
-      package_name: paperless
-
   - name: postgresql
     <<: *artifacthub-defaults
     source:
@@ -133,20 +84,6 @@ resources:
       repository_name: bitnami
       api_key: ((artifacthub_key))
       package_name: redis
-
-  - name: vaultwarden
-    <<: *artifacthub-defaults
-    source:
-      repository_name: k8s-at-home
-      api_key: ((artifacthub_key))
-      package_name: vaultwarden
-
-  - name: wikijs
-    <<: *artifacthub-defaults
-    source:
-      repository_name: k8s-at-home
-      api_key: ((artifacthub_key))
-      package_name: wikijs
 
 # begin job templates
 update-helmsman-dsf-config: &update-helmsman-dsf-config
@@ -273,105 +210,6 @@ jobs:
           branch: concourse
           force: true
 
-  - name: cryptofolio
-    plan:
-      - in_parallel:
-        - get: cryptofolio
-          trigger: true
-        - get: k8s-homelab-repo-pull-main
-        - get: concourse-pipelines-repo
-
-      - task: update-helmsman-dsf
-        input_mapping:
-          chart: cryptofolio
-        output_mapping:
-          chart: cryptofolio
-        config:
-          <<: *update-helmsman-dsf-config
-          params:
-            CHART: cryptofolio
-            CONTEXTS: homelab
-
-      - task: git-commit
-        input_mapping:
-          chart: cryptofolio
-        config:
-          <<: *git-commit-config
-          params:
-            CHART: cryptofolio
-
-      - put: k8s-homelab-repo-push-branch
-        params:
-          repository: k8s-homelab-repo-pull-main
-          branch: cryptofolio
-          force: true
-
-  - name: haste
-    plan:
-      - in_parallel:
-        - get: haste
-          trigger: true
-        - get: k8s-homelab-repo-pull-main
-        - get: concourse-pipelines-repo
-
-      - task: update-helmsman-dsf
-        input_mapping:
-          chart: haste
-        output_mapping:
-          chart: haste
-        config:
-          <<: *update-helmsman-dsf-config
-          params:
-            CHART: haste
-            CONTEXTS: oracle
-
-      - task: git-commit
-        input_mapping:
-          chart: haste
-        config:
-          <<: *git-commit-config
-          params:
-            CHART: haste
-
-      - put: k8s-homelab-repo-push-branch
-        params:
-          repository: k8s-homelab-repo-pull-main
-          branch: haste
-          force: true
-
-  - name: ihatemoney
-    plan:
-      - in_parallel:
-        - get: ihatemoney
-          trigger: true
-        - get: k8s-homelab-repo-pull-main
-        - get: concourse-pipelines-repo
-
-      - task: update-helmsman-dsf
-        input_mapping:
-          chart: ihatemoney
-        output_mapping:
-          chart: ihatemoney
-        config:
-          <<: *update-helmsman-dsf-config
-          params:
-            CHART: ihatemoney
-            CONTEXTS: homelab
-
-      - task: git-commit
-        input_mapping:
-          chart: ihatemoney
-        config:
-          <<: *git-commit-config
-          params:
-            CHART: ihatemoney
-
-      - put: k8s-homelab-repo-push-branch
-        params:
-          repository: k8s-homelab-repo-pull-main
-          branch: ihatemoney
-          force: true
-
   - name: influxdb2
     plan:
       - in_parallel:
@@ -436,72 +274,6 @@ jobs:
         params:
           repository: k8s-homelab-repo-pull-main
           branch: ingress-nginx
-          force: true
-
-  - name: jellyfin
-    plan:
-      - in_parallel:
-        - get: jellyfin
-          trigger: true
-        - get: k8s-homelab-repo-pull-main
-        - get: concourse-pipelines-repo
-
-      - task: update-helmsman-dsf
-        input_mapping:
-          chart: jellyfin
-        output_mapping:
-          chart: jellyfin
-        config:
-          <<: *update-helmsman-dsf-config
-          params:
-            CHART: jellyfin
-            CONTEXTS: homelab
-
-      - task: git-commit
-        input_mapping:
-          chart: jellyfin
-        config:
-          <<: *git-commit-config
-          params:
-            CHART: jellyfin
-
-      - put: k8s-homelab-repo-push-branch
-        params:
-          repository: k8s-homelab-repo-pull-main
-          branch: jellyfin
-          force: true
-
-  - name: kube-ops-view
-    plan:
-      - in_parallel:
-        - get: kube-ops-view
-          trigger: true
-        - get: k8s-homelab-repo-pull-main
-        - get: concourse-pipelines-repo
-
-      - task: update-helmsman-dsf
-        input_mapping:
-          chart: kube-ops-view
-        output_mapping:
-          chart: kube-ops-view
-        config:
-          <<: *update-helmsman-dsf-config
-          params:
-            CHART: kube-ops-view
-            CONTEXTS: homelab
-
-      - task: git-commit
-        input_mapping:
-          chart: kube-ops-view
-        config:
-          <<: *git-commit-config
-          params:
-            CHART: kube-ops-view
-
-      - put: k8s-homelab-repo-push-branch
-        params:
-          repository: k8s-homelab-repo-pull-main
-          branch: kube-ops-view
           force: true
 
   - name: k8s-dashboard
@@ -570,72 +342,6 @@ jobs:
           branch: nextcloud
           force: true
 
-  - name: owncast
-    plan:
-      - in_parallel:
-        - get: owncast
-          trigger: true
-        - get: k8s-homelab-repo-pull-main
-        - get: concourse-pipelines-repo
-
-      - task: update-helmsman-dsf
-        input_mapping:
-          chart: owncast
-        output_mapping:
-          chart: owncast
-        config:
-          <<: *update-helmsman-dsf-config
-          params:
-            CHART: owncast
-            CONTEXTS: homelab
-
-      - task: git-commit
-        input_mapping:
-          chart: owncast
-        config:
-          <<: *git-commit-config
-          params:
-            CHART: owncast
-
-      - put: k8s-homelab-repo-push-branch
-        params:
-          repository: k8s-homelab-repo-pull-main
-          branch: owncast
-          force: true
-
-  - name: paperless
-    plan:
-      - in_parallel:
-        - get: paperless
-          trigger: true
-        - get: k8s-homelab-repo-pull-main
-        - get: concourse-pipelines-repo
-
-      - task: update-helmsman-dsf
-        input_mapping:
-          chart: paperless
-        output_mapping:
-          chart: paperless
-        config:
-          <<: *update-helmsman-dsf-config
-          params:
-            CHART: paperless
-            CONTEXTS: homelab
-
-      - task: git-commit
-        input_mapping:
-          chart: paperless
-        config:
-          <<: *git-commit-config
-          params:
-            CHART: paperless
-
-      - put: k8s-homelab-repo-push-branch
-        params:
-          repository: k8s-homelab-repo-pull-main
-          branch: paperless
-          force: true
-
   - name: postgresql
     plan:
       - in_parallel:
@@ -700,70 +406,4 @@ jobs:
         params:
           repository: k8s-homelab-repo-pull-main
           branch: redis
-          force: true
-
-  - name: vaultwarden
-    plan:
-      - in_parallel:
-        - get: vaultwarden
-          trigger: true
-        - get: k8s-homelab-repo-pull-main
-        - get: concourse-pipelines-repo
-
-      - task: update-helmsman-dsf
-        input_mapping:
-          chart: vaultwarden
-        output_mapping:
-          chart: vaultwarden
-        config:
-          <<: *update-helmsman-dsf-config
-          params:
-            CHART: vaultwarden
-            CONTEXTS: homelab
-
-      - task: git-commit
-        input_mapping:
-          chart: vaultwarden
-        config:
-          <<: *git-commit-config
-          params:
-            CHART: vaultwarden
-
-      - put: k8s-homelab-repo-push-branch
-        params:
-          repository: k8s-homelab-repo-pull-main
-          branch: vaultwarden
-          force: true
-
-  - name: wikijs
-    plan:
-      - in_parallel:
-        - get: wikijs
-          trigger: true
-        - get: k8s-homelab-repo-pull-main
-        - get: concourse-pipelines-repo
-
-      - task: update-helmsman-dsf
-        input_mapping:
-          chart: wikijs
-        output_mapping:
-          chart: wikijs
-        config:
-          <<: *update-helmsman-dsf-config
-          params:
-            CHART: wikijs
-            CONTEXTS: homelab
-
-      - task: git-commit
-        input_mapping:
-          chart: wikijs
-        config:
-          <<: *git-commit-config
-          params:
-            CHART: wikijs
-
-      - put: k8s-homelab-repo-push-branch
-        params:
-          repository: k8s-homelab-repo-pull-main
-          branch: wikijs
           force: true
