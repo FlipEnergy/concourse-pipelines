@@ -11,6 +11,12 @@ resource_types:
 resources:
   - *discord-image
 
+  - name: &flatnotes_resource flatnotes-docker-repo
+    <<: *resource_options
+    source:
+      <<: *docker-creds
+      repository: dullage/flatnotes
+
   - name: &ihatemoney_resource ihatemoney-docker-repo
     <<: *resource_options
     source:
@@ -34,7 +40,6 @@ resources:
     source:
       <<: *docker-creds
       repository: jellyfin/jellyfin
-
 
   - name: &soft_serve_resource soft-serve-docker-repo
     <<: *resource_options
@@ -79,6 +84,22 @@ discord_notification: &discord_notification
 # end job templates
 
 jobs:
+  - name: flatnotes
+    plan:
+      - get: *flatnotes_resource
+        <<: *get_options
+
+      - task: build-message
+        config:
+          <<: *build_message_config
+          inputs:
+            - name: *flatnotes_resource
+          params:
+            IMAGE_NAME: flatnotes
+            RELEASE_URL: https://github.com/Dullage/flatnotes/releases
+            RESOURCE_DIR: *flatnotes_resource
+      - *discord_notification
+
   - name: ihatemoney
     plan:
       - get: *ihatemoney_resource
