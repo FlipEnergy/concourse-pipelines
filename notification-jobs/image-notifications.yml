@@ -53,12 +53,6 @@ resources:
       <<: *docker-creds
       repository: vaultwarden/server
 
-  - name: &wikijs_resource wikijs-docker-repo
-    <<: *resource_options
-    source:
-      <<: *docker-creds
-      repository: requarks/wiki
-
 # begin job templates
 get_options: &get_options
   params:
@@ -194,20 +188,4 @@ jobs:
             IMAGE_NAME: Vaultwarden
             RELEASE_URL: https://github.com/dani-garcia/vaultwarden/releases
             RESOURCE_DIR: *vaultwarden_resource
-      - *discord_notification
-
-  - name: wikijs
-    plan:
-      - get: *wikijs_resource
-        <<: *get_options
-
-      - task: build-message
-        config:
-          <<: *build_message_config
-          inputs:
-            - name: *wikijs_resource
-          params:
-            IMAGE_NAME: WikiJS
-            RELEASE_URL: https://github.com/requarks/wiki/releases
-            RESOURCE_DIR: *wikijs_resource
       - *discord_notification
