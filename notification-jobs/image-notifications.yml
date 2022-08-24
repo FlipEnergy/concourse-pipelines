@@ -11,6 +11,12 @@ resource_types:
 resources:
   - *discord-image
 
+  - name: &cryptofolio_resource cryptofolio-docker-repo
+    <<: *resource_options
+    source:
+      <<: *docker-creds
+      repository: xtrendence/cryptofolio
+
   - name: &flatnotes_resource flatnotes-docker-repo
     <<: *resource_options
     source:
@@ -23,6 +29,23 @@ resources:
       <<: *docker-creds
       repository: ihatemoney/ihatemoney
 
+  - name: &jellyfin_resource jellyfin-docker-repo
+    <<: *resource_options
+    source:
+      <<: *docker-creds
+      repository: jellyfin/jellyfin
+
+  - name: &kube_resource kube-ops-view-docker-repo
+    <<: *resource_options
+    source:
+      <<: *docker-creds
+      repository: hjacobs/kube-ops-view
+
+  - name: &paperless_resource paperless-ngx-docker-repo
+    <<: *resource_options
+    source:
+      repository: ghcr.io/paperless-ngx/paperless-ngx
+
   - name: &oci_resource oci-build-task-docker-repo
     <<: *resource_options
     source:
@@ -34,12 +57,6 @@ resources:
     source:
       <<: *docker-creds
       repository: gabekangas/owncast
-
-  - name: &jellyfin_resource jellyfin-docker-repo
-    <<: *resource_options
-    source:
-      <<: *docker-creds
-      repository: jellyfin/jellyfin
 
   - name: &soft_serve_resource soft-serve-docker-repo
     <<: *resource_options
@@ -78,6 +95,22 @@ discord_notification: &discord_notification
 # end job templates
 
 jobs:
+  - name: cryptofolio
+    plan:
+      - get: *cryptofolio_resource
+        <<: *get_options
+
+      - task: build-message
+        config:
+          <<: *build_message_config
+          inputs:
+            - name: *cryptofolio_resource
+          params:
+            IMAGE_NAME: cryptofolio
+            RELEASE_URL: https://github.com/Xtrendence/Cryptofolio/releases
+            RESOURCE_DIR: *cryptofolio_resource
+      - *discord_notification
+
   - name: flatnotes
     plan:
       - get: *flatnotes_resource
@@ -124,6 +157,38 @@ jobs:
             IMAGE_NAME: Jellyfin
             RELEASE_URL: https://github.com/jellyfin/jellyfin/releases
             RESOURCE_DIR: *jellyfin_resource
+      - *discord_notification
+
+  - name: kube-ops-view
+    plan:
+      - get: *kube_resource
+        <<: *get_options
+
+      - task: build-message
+        config:
+          <<: *build_message_config
+          inputs:
+            - name: *kube_resource
+          params:
+            IMAGE_NAME: kube-ops-view
+            RELEASE_URL: https://codeberg.org/hjacobs/kube-ops-view/tags
+            RESOURCE_DIR: *kube_resource
+      - *discord_notification
+
+  - name: paperless-ngx
+    plan:
+      - get: *paperless_resource
+        <<: *get_options
+
+      - task: build-message
+        config:
+          <<: *build_message_config
+          inputs:
+            - name: *paperless_resource
+          params:
+            IMAGE_NAME: paperless-ngx
+            RELEASE_URL: https://github.com/paperless-ngx/paperless-ngx/releases
+            RESOURCE_DIR: *paperless_resource
       - *discord_notification
 
   - name: oci-build-task
