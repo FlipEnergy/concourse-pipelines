@@ -41,6 +41,13 @@ resources:
       <<: *docker-creds
       repository: hjacobs/kube-ops-view
 
+  - name: &nextcloud_resource nextcloud-docker-repo
+    <<: *resource_options
+    source:
+      <<: *docker-creds
+      repository: nextcloud
+      variant: apache
+
   - name: &paperless_resource paperless-ngx-docker-repo
     <<: *resource_options
     source:
@@ -173,6 +180,22 @@ jobs:
             IMAGE_NAME: kube-ops-view
             RELEASE_URL: https://codeberg.org/hjacobs/kube-ops-view/tags
             RESOURCE_DIR: *kube_resource
+      - *discord_notification
+
+  - name: nextcloud
+    plan:
+      - get: *nextcloud_resource
+        <<: *get_options
+
+      - task: build-message
+        config:
+          <<: *build_message_config
+          inputs:
+            - name: *nextcloud_resource
+          params:
+            IMAGE_NAME: nextcloud
+            RELEASE_URL: https://nextcloud.com/changelog/#latest24
+            RESOURCE_DIR: *nextcloud_resource
       - *discord_notification
 
   - name: paperless-ngx
