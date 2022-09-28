@@ -214,22 +214,6 @@ jobs:
             RESOURCE_DIR: *paperless_resource
       - *discord_notification
 
-  - name: oci-build-task
-    plan:
-      - get: *oci_resource
-        <<: *get_options
-
-      - task: build-message
-        config:
-          <<: *build_message_config
-          inputs:
-            - name: *oci_resource
-          params:
-            IMAGE_NAME: OCI-build
-            RELEASE_URL: https://github.com/concourse/oci-build-task/releases
-            RESOURCE_DIR: *oci_resource
-      - *discord_notification
-
   - name: owncast
     plan:
       - get: *owncast_resource
