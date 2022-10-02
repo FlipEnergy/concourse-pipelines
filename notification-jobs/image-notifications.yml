@@ -23,12 +23,6 @@ resources:
       <<: *docker-creds
       repository: dullage/flatnotes
 
-  - name: &ihatemoney_resource ihatemoney-docker-repo
-    <<: *resource_options
-    source:
-      <<: *docker-creds
-      repository: ihatemoney/ihatemoney
-
   - name: &jellyfin_resource jellyfin-docker-repo
     <<: *resource_options
     source:
@@ -132,22 +126,6 @@ jobs:
             IMAGE_NAME: flatnotes
             RELEASE_URL: https://github.com/Dullage/flatnotes/releases
             RESOURCE_DIR: *flatnotes_resource
-      - *discord_notification
-
-  - name: ihatemoney
-    plan:
-      - get: *ihatemoney_resource
-        <<: *get_options
-
-      - task: build-message
-        config:
-          <<: *build_message_config
-          inputs:
-            - name: *ihatemoney_resource
-          params:
-            IMAGE_NAME: ihatemoney
-            RELEASE_URL: https://github.com/spiral-project/ihatemoney/releases
-            RESOURCE_DIR: *ihatemoney_resource
       - *discord_notification
 
   - name: jellyfin
