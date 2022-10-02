@@ -47,12 +47,6 @@ resources:
     source:
       repository: ghcr.io/paperless-ngx/paperless-ngx
 
-  - name: &oci_resource oci-build-task-docker-repo
-    <<: *resource_options
-    source:
-      <<: *docker-creds
-      repository: concourse/oci-build-task
-
   - name: &owncast_resource owncast-docker-repo
     <<: *resource_options
     source:
