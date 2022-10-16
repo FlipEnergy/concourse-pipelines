@@ -59,6 +59,12 @@ resources:
       <<: *docker-creds
       repository: charmcli/soft-serve
 
+  - name: &stash_resource stash-docker-repo
+    <<: *resource_options
+    source:
+      <<: *docker-creds
+      repository: stashapp/stash
+
   - name: &vaultwarden_resource vaultwarden-docker-repo
     <<: *resource_options
     source:
@@ -216,6 +222,22 @@ jobs:
             IMAGE_NAME: soft-serve
             RELEASE_URL: https://github.com/charmbracelet/soft-serve/releases
             RESOURCE_DIR: *soft_serve_resource
+      - *discord_notification
+
+  - name: stash
+    plan:
+      - get: *stash_resource
+        <<: *get_options
+
+      - task: build-message
+        config:
+          <<: *build_message_config
+          inputs:
+            - name: *stash_resource
+          params:
+            IMAGE_NAME: stash
+            RELEASE_URL: https://github.com/stashapp/stash/releases
+            RESOURCE_DIR: *stash_resource
       - *discord_notification
 
   - name: vaultwarden
