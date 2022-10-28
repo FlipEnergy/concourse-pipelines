@@ -1,3 +1,17 @@
+templates:
+  - name: notifications
+    notify-branch-failure: &notify-branch-failure
+      put: discord-info
+      params:
+        message: "**DIFF FAILED** :x: **[((branch))/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL}?vars.branch=\"((branch))\")**"
+    branch-job-notifications: &branch-job-notifications
+      on_success:
+        put: discord-info
+        params:
+          message: "**DIFF** :new: **[((branch))/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL}?vars.branch=\"((branch))\")**"
+      on_error: *notify-branch-failure
+      on_failure: *notify-branch-failure
+
 resource_types:
   - *webhook-resource-type
 
@@ -21,22 +35,6 @@ resources:
       <<: *github-creds
 
   - *concourse-pipelines-repo
-
-# begin job templates
-notify-branch-failure: &notify-branch-failure
-  put: discord-info
-  params:
-    message: "**DIFF FAILED** :x: **[((branch))/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL}?vars.branch=\"((branch))\")**"
-
-branch-job-notifications: &branch-job-notifications
-  on_success:
-    put: discord-info
-    params:
-      message: "**DIFF** :new: **[((branch))/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL}?vars.branch=\"((branch))\")**"
-  on_error: *notify-branch-failure
-  on_failure: *notify-branch-failure
-
-# end job templates
 
 jobs:
   - name: diff-homelab

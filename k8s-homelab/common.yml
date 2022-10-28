@@ -1,14 +1,15 @@
-get-k8s-homelab-in-parrallel: &get-k8s-homelab-in-parrallel
-  - get: k8s-homelab-repo
-    trigger: true
-  - get: concourse-pipelines-repo
-
-helmsman-task-config: &helmsman-task-config
-  platform: linux
-  image_resource: *helmsman-image-resource
-  inputs:
-    - name: k8s-homelab-repo
-    - name: concourse-pipelines-repo
-    - name: secrets
-  run:
-    path: concourse-pipelines-repo/k8s-homelab/deploy-k8s.sh
+k8s-homelab-templates:
+  - name: jobs
+    get-k8s-homelab-in-parrallel: &get-k8s-homelab-in-parrallel
+      - get: k8s-homelab-repo
+        trigger: true
+      - get: concourse-pipelines-repo
+    helmsman-task-config: &helmsman-task-config
+      platform: linux
+      image_resource: *helmsman-image-resource
+      inputs:
+        - name: k8s-homelab-repo
+        - name: concourse-pipelines-repo
+        - name: secrets
+      run:
+        path: concourse-pipelines-repo/k8s-homelab/deploy-k8s.sh

@@ -1,15 +1,71 @@
+templates:
+  - name: resource options
+    artifacthub-defaults: &artifacthub-defaults
+      type: artifacthub
+      check_every: 4h
+
+  - name: jobs
+    update-helmsman-dsf-config: &update-helmsman-dsf-config
+      platform: linux
+      image_resource: *yq-image-resource
+      inputs:
+        - name: chart
+        - name: k8s-homelab-repo-pull-main
+      outputs:
+        - name: chart
+        - name: k8s-homelab-repo-pull-main
+      run:
+        path: /bin/sh
+        args:
+          - -c
+          - |
+            set -eu
+
+            ls chart/version
+            version=$(cat chart/version)
+
+            echo "setting ${CHART} to ${version}"
+
+            for context in $CONTEXTS; do
+              yq -i ".apps.${CHART}.version = \"${version}\"" "k8s-homelab-repo-pull-main/${context}.yaml"
+            done
+    git-commit-config: &git-commit-config
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          <<: *docker-creds
+          repository: bitnami/git
+          tag: latest
+      inputs:
+        - name: chart
+        - name: concourse-pipelines-repo
+        - name: k8s-homelab-repo-pull-main
+      outputs:
+        - name: k8s-homelab-repo-pull-main
+      run:
+        dir: k8s-homelab-repo-pull-main
+        path: /bin/sh
+        args:
+          - -c
+          - |
+            set -eu
+
+            ../concourse-pipelines-repo/common/scripts/setup-git-config.sh
+
+            git --no-pager diff
+            git add .
+
+            message="${CHART} chart version $(cat ../chart/version)"
+            echo "Commit message: ${message}"
+            git commit -m "$message"
+
 resource_types:
   - name: artifacthub
     type: docker-image
     source:
       repository: ghcr.io/hdisysteme/artifacthub-resource
       tag: latest
-
-# begin resource templates
-artifacthub-defaults: &artifacthub-defaults
-  type: artifacthub
-  check_every: 4h
-# end resource templates
 
 resources:
   - *concourse-pipelines-repo
@@ -85,63 +141,31 @@ resources:
       api_key: ((artifacthub_key))
       package_name: redis
 
-# begin job templates
-update-helmsman-dsf-config: &update-helmsman-dsf-config
-  platform: linux
-  image_resource: *yq-image-resource
-  inputs:
-    - name: chart
-    - name: k8s-homelab-repo-pull-main
-  outputs:
-    - name: chart
-    - name: k8s-homelab-repo-pull-main
-  run:
-    path: /bin/sh
-    args:
-      - -c
-      - |
-        set -eu
-
-        ls chart/version
-        version=$(cat chart/version)
-
-        echo "setting ${CHART} to ${version}"
-
-        for context in $CONTEXTS; do
-          yq -i ".apps.${CHART}.version = \"${version}\"" "k8s-homelab-repo-pull-main/${context}.yaml"
-        done
-
-git-commit-config: &git-commit-config
-  platform: linux
-  image_resource:
-    type: registry-image
-    source:
-      <<: *docker-creds
-      repository: bitnami/git
-      tag: latest
-  inputs:
-    - name: chart
-    - name: concourse-pipelines-repo
-    - name: k8s-homelab-repo-pull-main
-  outputs:
-    - name: k8s-homelab-repo-pull-main
-  run:
-    dir: k8s-homelab-repo-pull-main
-    path: /bin/sh
-    args:
-      - -c
-      - |
-        set -eu
-
-        ../concourse-pipelines-repo/common/scripts/setup-git-config.sh
-
-        git --no-pager diff
-        git add .
-
-        message="${CHART} chart version $(cat ../chart/version)"
-        echo "Commit message: ${message}"
-        git commit -m "$message"
-# end job templates
+groups:
+  - name: botkube
+    jobs:
+      - botkube
+  - name: concourse
+    jobs:
+      - concourse
+  - name: influxdb2
+    jobs:
+      - influxdb2
+  - name: ingress-nginx
+    jobs:
+      - ingress-nginx
+  - name: k8s-dashboard
+    jobs:
+      - k8s-dashboard
+  - name: nextcloud
+    jobs:
+      - nextcloud
+  - name: postgresql
+    jobs:
+      - postgresql
+  - name: redis
+    jobs:
+      - redis
 
 jobs:
   - name: botkube

@@ -95,6 +95,38 @@ discord_notification: &discord_notification
     message_file: /tmp/build/put/message/message.txt
 # end job templates
 
+groups:
+  - name: cryptofolio
+    jobs:
+      - cryptofolio
+  - name: flatnotes
+    jobs:
+      - flatnotes
+  - name: jellyfin
+    jobs:
+      - jellyfin
+  - name: kube-ops-view
+    jobs:
+      - kube-ops-view
+  - name: nextcloud
+    jobs:
+      - nextcloud
+  - name: paperless-ngx
+    jobs:
+      - paperless-ngx
+  - name: owncast
+    jobs:
+      - owncast
+  - name: soft-serve
+    jobs:
+      - soft-serve
+  - name: stash
+    jobs:
+      - stash
+  - name: vaultwarden
+    jobs:
+      - vaultwarden
+
 jobs:
   - name: cryptofolio
     plan:

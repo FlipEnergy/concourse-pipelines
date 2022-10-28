@@ -1,140 +1,124 @@
-# credential blocks
-docker-creds: &docker-creds
-  username: ((docker_hub_username))
-  password: ((docker_hub_password))
+common-templates:
+  - name: credential blocks
+    docker-creds: &docker-creds
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
+    github-creds: &github-creds
+      username: ((github_username))
+      password: ((github_password))
+    github-access-token: &github-access-token
+      access_token: ((github_password))
 
-github-creds: &github-creds
-  username: ((github_username))
-  password: ((github_password))
+  - name: resource types
+    webhook-resource-type: &webhook-resource-type
+      name: webhook-resource-type
+      type: registry-image
+      source:
+        <<: *docker-creds
+        repository: flavorjones/webhook-notification-resource
+        tag: v1.1.0
 
-github-access-token: &github-access-token
-  access_token: ((github_password))
+  - name: resources
+    discord-deploy: &discord-deploy
+      name: discord-deploy
+      type: webhook-resource-type
+      icon: bell
+      source:
+          adapter: DiscordAdapter
+          url: ((discord_deploy_webhook_url))
+      check_every: never
+    discord-info: &discord-info
+      name: discord-info
+      type: webhook-resource-type
+      icon: bell
+      source:
+          adapter: DiscordAdapter
+          url: ((discord_info_webhook_url))
+      check_every: never
+    discord-image: &discord-image
+      name: discord-image
+      type: webhook-resource-type
+      icon: bell
+      source:
+          adapter: DiscordAdapter
+          url: ((discord_image_webhook_url))
+      check_every: never
+    concourse-pipelines-repo: &concourse-pipelines-repo
+      name: concourse-pipelines-repo
+      type: git
+      icon: github
+      source:
+        <<: *github-creds
+        uri: https://github.com/FlipEnergy/concourse-pipelines.git
+        branch: main
+      check_every: 30m
 
-# resource types
-webhook-resource-type: &webhook-resource-type
-  name: webhook-resource-type
-  type: registry-image
-  source:
-    <<: *docker-creds
-    repository: flavorjones/webhook-notification-resource
-    tag: v1.1.0
+  - name: task image resources
+    alpine-image-resource: &alpine-image-resource
+      type: registry-image
+      source:
+        <<: *docker-creds
+        repository: alpine
+        tag: 3.14
+    bitwarden-cli-image-resource: &bitwarden-cli-image-resource
+      type: registry-image
+      source:
+        <<: *docker-creds
+        repository: flipenergy/bitwarden-cli
+        tag: latest
+    helmsman-image-resource: &helmsman-image-resource
+      type: registry-image
+      source:
+        <<: *docker-creds
+        repository: praqma/helmsman
+        tag: latest
+    helm-image-resource: &helm-image-resource
+      type: registry-image
+      source:
+        <<: *docker-creds
+        repository: alpine/helm
+        tag: latest
+    oci-build-image-resource: &oci-build-image-resource
+      type: registry-image
+      source:
+        <<: *docker-creds
+        repository: concourse/oci-build-task
+        tag: latest
+    yq-image-resource: &yq-image-resource
+      type: registry-image
+      source:
+        <<: *docker-creds
+        repository: flipenergy/yq-ubuntu
+        tag: latest
 
-# resources
-discord-deploy: &discord-deploy
-  name: discord-deploy
-  type: webhook-resource-type
-  icon: bell
-  source:
-      adapter: DiscordAdapter
-      url: ((discord_deploy_webhook_url))
-  check_every: never
+  - name: notifications
+    notify-deploy-failure: &notify-deploy-failure
+      put: discord-deploy
+      params:
+        message: "**FAILED** :boom: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
+    deploy-job-notifications: &deploy-job-notifications
+      on_success:
+        put: discord-deploy
+        params:
+          message: "**SUCCESS** :rocket: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
+      on_error: *notify-deploy-failure
+      on_failure: *notify-deploy-failure
 
-discord-info: &discord-info
-  name: discord-info
-  type: webhook-resource-type
-  icon: bell
-  source:
-      adapter: DiscordAdapter
-      url: ((discord_info_webhook_url))
-  check_every: never
-
-discord-image: &discord-image
-  name: discord-image
-  type: webhook-resource-type
-  icon: bell
-  source:
-      adapter: DiscordAdapter
-      url: ((discord_image_webhook_url))
-  check_every: never
-
-concourse-pipelines-repo: &concourse-pipelines-repo
-  name: concourse-pipelines-repo
-  type: git
-  icon: github
-  source:
-    <<: *github-creds
-    uri: https://github.com/FlipEnergy/concourse-pipelines.git
-    branch: main
-  check_every: 30m
-
-# task image resources
-alpine-image-resource: &alpine-image-resource
-  type: registry-image
-  source:
-    <<: *docker-creds
-    repository: alpine
-    tag: 3.14
-
-bitwarden-cli-image-resource: &bitwarden-cli-image-resource
-  type: registry-image
-  source:
-    <<: *docker-creds
-    repository: flipenergy/bitwarden-cli
-    tag: latest
-
-helmsman-image-resource: &helmsman-image-resource
-  type: registry-image
-  source:
-    <<: *docker-creds
-    repository: praqma/helmsman
-    tag: latest
-
-helm-image-resource: &helm-image-resource
-  type: registry-image
-  source:
-    <<: *docker-creds
-    repository: alpine/helm
-    tag: latest
-
-oci-build-image-resource: &oci-build-image-resource
-  type: registry-image
-  source:
-    <<: *docker-creds
-    repository: concourse/oci-build-task
-    tag: latest
-
-yq-image-resource: &yq-image-resource
-  type: registry-image
-  source:
-    <<: *docker-creds
-    repository: flipenergy/yq-ubuntu
-    tag: latest
-
-# notifications
-notify-deploy-failure: &notify-deploy-failure
-  put: discord-deploy
-  params:
-    message: "**FAILED** :boom: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
-
-deploy-job-notifications: &deploy-job-notifications
-  on_success:
-    put: discord-deploy
-    params:
-      message: "**SUCCESS** :rocket: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
-  on_error: *notify-deploy-failure
-  on_failure: *notify-deploy-failure
-
-# tasks
-get-secret-key-task: &get-secret-key-task
-  task: get-secret-key
-  config:
-    platform: linux
-    image_resource: *bitwarden-cli-image-resource
-
-    inputs:
-      - name: concourse-pipelines-repo
-
-    outputs:
-      - name: concourse-pipelines-repo
-      - name: secrets
-
-    params:
-      BW_ITEM: ((bitwarden_item))
-      BW_SERVER: ((bitwarden_server))
-      BW_USERNAME: ((bitwarden_username))
-      BW_PASSWORD: ((bitwarden_password))
-
-    run:
-      path: concourse-pipelines-repo/common/scripts/get-secret-key.sh
-
-# end reusable blocks
+  - name: tasks
+    get-secret-key-task: &get-secret-key-task
+      task: get-secret-key
+      config:
+        platform: linux
+        image_resource: *bitwarden-cli-image-resource
+        inputs:
+          - name: concourse-pipelines-repo
+        outputs:
+          - name: concourse-pipelines-repo
+          - name: secrets
+        params:
+          BW_ITEM: ((bitwarden_item))
+          BW_SERVER: ((bitwarden_server))
+          BW_USERNAME: ((bitwarden_username))
+          BW_PASSWORD: ((bitwarden_password))
+        run:
+          path: concourse-pipelines-repo/common/scripts/get-secret-key.sh

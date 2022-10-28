@@ -1,13 +1,50 @@
-# begin resource templates
-github_resource_options: &github_resource_options
-  type: github-release
-  icon: github
-  check_every: 30m
+template:
+  - name: resource options
+    github_resource_options: &github_resource_options
+      type: github-release
+      icon: github
+      check_every: 30m
+    image_resource_options: &image_resource_options
+      type: registry-image
+      icon: docker
 
-image_resource_options: &image_resource_options
-  type: registry-image
-  icon: docker
-# end resource templates
+  - name: jobs
+    release_get_options: &release_get_options
+      trigger: true
+      params:
+        globs:
+          - none
+    build_image_params: &build_image_params
+      CI_REPO_DIR: container-images-repo
+      BUILD_ARGS_FILE: build_args_file
+    build_image_config: &build_image_config
+      platform: linux
+      image_resource: *oci-build-image-resource
+      outputs:
+        - name: image
+      run:
+        path: sh
+        args:
+          - -ec
+          - >
+            echo VERSION=$(egrep -o '([0-9]{1,}\.)+[0-9]{1,}' ${VERSION_DIR_PATH}/${VERSION_FILE}) > build_args_file &&
+            export CONTEXT=${CI_REPO_DIR}/${DOCKER_CONTEXT_DIR} &&
+            build
+    put_image_params: &put_image_params
+      image: image/image.tar
+
+  - name: notifications
+    notify-failure: &notify-failure
+      put: discord-image
+      params:
+        message: "**FAILED** :boom: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
+    job-notifications: &job-notifications
+      on_success:
+        put: discord-image
+        params:
+          message: "**SUCCESS** :rocket: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
+      on_error: *notify-failure
+      on_failure: *notify-failure
 
 resource_types:
   - *webhook-resource-type
@@ -83,50 +120,6 @@ resources:
       <<: *docker-creds
       repository: flipenergy/yq-ubuntu
       tag: latest
-
-# begin job templates
-release_get_options: &release_get_options
-  trigger: true
-  params:
-    globs:
-      - none
-
-build_image_params: &build_image_params
-  CI_REPO_DIR: *ci_repo
-  BUILD_ARGS_FILE: build_args_file
-
-build_image_config: &build_image_config
-  platform: linux
-  image_resource: *oci-build-image-resource
-  outputs:
-    - name: image
-  run:
-    path: sh
-    args:
-      - -ec
-      - >
-        echo VERSION=$(egrep -o '([0-9]{1,}\.)+[0-9]{1,}' ${VERSION_DIR_PATH}/${VERSION_FILE}) > build_args_file &&
-        export CONTEXT=${CI_REPO_DIR}/${DOCKER_CONTEXT_DIR} &&
-        build
-
-put_image_params: &put_image_params
-  image: image/image.tar
-
-# notifications
-notify-failure: &notify-failure
-  put: discord-image
-  params:
-    message: "**FAILED** :boom: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
-
-job-notifications: &job-notifications
-  on_success:
-    put: discord-image
-    params:
-      message: "**SUCCESS** :rocket: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
-  on_error: *notify-failure
-  on_failure: *notify-failure
-
-# end job templates
 
 jobs:
   - name: bitwarden-cli-image
