@@ -5,7 +5,7 @@ resource_options: &resource_options
   check_every: 10m
 
 resource_source: &resource_source
-  start: 9:30 AM
+  start: 8:00 AM
   stop: 9:30 PM
   location: America/Vancouver
 # end resource templates
