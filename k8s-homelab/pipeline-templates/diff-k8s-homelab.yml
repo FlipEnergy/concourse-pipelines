@@ -103,8 +103,13 @@ jobs:
 
                 ../concourse-pipelines-repo/common/scripts/setup-git-config.sh
 
+                echo 'fetching latest branch: ((branch))'
                 git fetch origin ((branch)):origin/((branch))
+
+                echo 'commit be cherry-picked:'
                 git log -n 1 origin/((branch))
+
+                echo 'running cherry-pick'
                 git cherry-pick origin/((branch))
 
       - put: k8s-homelab-repo-main
