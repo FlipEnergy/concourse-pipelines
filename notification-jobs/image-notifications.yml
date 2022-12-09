@@ -204,7 +204,7 @@ jobs:
             - name: *nextcloud_resource
           params:
             IMAGE_NAME: nextcloud
-            RELEASE_URL: https://nextcloud.com/changelog/#latest24
+            RELEASE_URL: https://nextcloud.com/changelog/#latest25
             RESOURCE_DIR: *nextcloud_resource
       - *discord_notification
 
