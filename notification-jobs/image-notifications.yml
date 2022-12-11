@@ -47,12 +47,6 @@ resources:
     source:
       repository: ghcr.io/paperless-ngx/paperless-ngx
 
-  - name: &owncast_resource owncast-docker-repo
-    <<: *resource_options
-    source:
-      <<: *docker-creds
-      repository: gabekangas/owncast
-
   - name: &soft_serve_resource soft-serve-docker-repo
     <<: *resource_options
     source:
@@ -114,9 +108,6 @@ groups:
   - name: paperless-ngx
     jobs:
       - paperless-ngx
-  - name: owncast
-    jobs:
-      - owncast
   - name: soft-serve
     jobs:
       - soft-serve
@@ -222,22 +213,6 @@ jobs:
             IMAGE_NAME: paperless-ngx
             RELEASE_URL: https://github.com/paperless-ngx/paperless-ngx/releases
             RESOURCE_DIR: *paperless_resource
-      - *discord_notification
-
-  - name: owncast
-    plan:
-      - get: *owncast_resource
-        <<: *get_options
-
-      - task: build-message
-        config:
-          <<: *build_message_config
-          inputs:
-            - name: *owncast_resource
-          params:
-            IMAGE_NAME: Owncast
-            RELEASE_URL: https://github.com/owncast/owncast/releases
-            RESOURCE_DIR: *owncast_resource
       - *discord_notification
 
   - name: soft-serve
