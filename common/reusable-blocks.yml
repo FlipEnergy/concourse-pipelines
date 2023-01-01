@@ -71,7 +71,7 @@ common-templates:
       source:
         <<: *docker-creds
         repository: praqma/helmsman
-        tag: latest
+        tag: v3.15.1
     helm-image-resource: &helm-image-resource
       type: registry-image
       source:
