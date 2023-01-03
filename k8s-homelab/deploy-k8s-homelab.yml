@@ -15,6 +15,7 @@ resources:
         - Makefile
         - README.md
         - .gitignore
+        - renovate.json
 
   - *concourse-pipelines-repo
 
