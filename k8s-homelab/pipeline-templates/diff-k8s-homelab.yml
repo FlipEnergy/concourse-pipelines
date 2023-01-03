@@ -26,14 +26,6 @@ resources:
       branch: ((branch))
       <<: *github-creds
 
-  - name: k8s-homelab-repo-main
-    type: git
-    icon: github
-    source:
-      uri: https://github.com/FlipEnergy/k8s-homelab.git
-      branch: main
-      <<: *github-creds
-
   - *concourse-pipelines-repo
 
 jobs:
@@ -70,49 +62,3 @@ jobs:
             REPO_DIR: k8s-homelab-repo
 
     <<: *branch-job-notifications
-
-  - name: cherry-pick-to-main
-    serial: true
-    plan:
-      - in_parallel:
-        - get: concourse-pipelines-repo
-          passed: [diff-homelab, diff-oracle]
-        - get: k8s-homelab-repo-main
-
-      - task: git-cherry-pick
-        config:
-          platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              <<: *docker-creds
-              repository: bitnami/git
-              tag: latest
-          inputs:
-            - name: concourse-pipelines-repo
-            - name: k8s-homelab-repo-main
-          outputs:
-            - name: k8s-homelab-repo-main
-          run:
-            dir: k8s-homelab-repo-main
-            path: /bin/sh
-            args:
-              - -c
-              - |
-                set -eu
-
-                ../concourse-pipelines-repo/common/scripts/setup-git-config.sh
-
-                echo 'fetching latest branch: ((branch))'
-                git fetch origin ((branch)):origin/((branch))
-
-                echo 'commit be cherry-picked:'
-                git log -n 1 origin/((branch))
-
-                echo 'running cherry-pick'
-                git cherry-pick origin/((branch))
-
-      - put: k8s-homelab-repo-main
-        params:
-          repository: k8s-homelab-repo-main
-          branch: main
