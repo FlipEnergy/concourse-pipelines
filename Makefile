@@ -1,6 +1,6 @@
 # main commands
 
-set-all-pipelines: decrypt-secrets personal-website k8s-homelab-branch-tracker deploy-k8s-homelab images-build image-notifications misc-notifications clone-github-repos clean-decrypted-files
+set-all-pipelines: decrypt-secrets personal-website k8s-homelab-branch-tracker deploy-k8s-homelab images-build misc-notifications clone-github-repos clean-decrypted-files
 
 login:
 	fly -t homelab login -kb -c https://concourse.tgp
@@ -27,9 +27,6 @@ deploy-k8s-homelab:
 
 images-build:
 	cat common/reusable-blocks.yml image-build/image-build.yml | fly -t homelab set-pipeline -n -p $@ -c - -l common/vars/secrets.dec.yml
-
-image-notifications:
-	cat common/reusable-blocks.yml notification-jobs/image-notifications.yml | fly -t homelab set-pipeline -n -p $@ -c - -l common/vars/secrets.dec.yml
 
 misc-notifications:
 	cat common/reusable-blocks.yml notification-jobs/misc-notifications.yml | fly -t homelab set-pipeline -n -p $@ -c - -l common/vars/secrets.dec.yml
