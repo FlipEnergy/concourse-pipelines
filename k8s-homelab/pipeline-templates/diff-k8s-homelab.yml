@@ -35,7 +35,7 @@ jobs:
       - in_parallel: *get-k8s-homelab-in-parrallel
 
       - task: get-secret-key
-        file: concourse-pipelines/common/tasks/get-bw-secret.yml
+        file: concourse-pipelines-repo/common/tasks/get-bw-secret.yml
 
       - task: diff-homelab-k8s
         config:
@@ -53,7 +53,7 @@ jobs:
       - in_parallel: *get-k8s-homelab-in-parrallel
 
       - task: get-secret-key
-        file: concourse-pipelines/common/tasks/get-bw-secret.yml
+        file: concourse-pipelines-repo/common/tasks/get-bw-secret.yml
 
       - task: diff-oracle-k8s
         config:

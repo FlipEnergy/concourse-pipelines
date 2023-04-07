@@ -37,7 +37,7 @@ jobs:
           trigger: true
 
       - task: get-tf-variables
-        file: concourse-pipelines/common/tasks/get-bw-secret.yml
+        file: concourse-pipelines-repo/common/tasks/get-bw-secret.yml
         params:
           BW_ITEM: ((bitwarden_tf_vars_item_id))
 
