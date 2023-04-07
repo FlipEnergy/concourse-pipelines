@@ -2,7 +2,7 @@ resource_types:
   - *webhook-resource-type
 
 resources:
-  - *discord-deploy
+  - *discord-general
 
   # Repo to pull for building image
   - name: &site-repo personal-website-repo
@@ -91,7 +91,8 @@ jobs:
           passed: [build-and-push-image]
         - get: concourse-pipelines-repo
 
-      - *get-secret-key-task
+      - task: get-secret-key
+        file: concourse-pipelines/common/tasks/get-bw-secret.yml
 
       - task: deploy-to-k8s
         config:
@@ -107,4 +108,4 @@ jobs:
           run:
             path: concourse-pipelines-repo/personal-website/deploy-to-k8s.sh
 
-    <<: *deploy-job-notifications
+    <<: *job-notifications

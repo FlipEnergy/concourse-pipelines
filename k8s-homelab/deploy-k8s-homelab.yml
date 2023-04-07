@@ -2,7 +2,7 @@ resource_types:
   - *webhook-resource-type
 
 resources:
-  - *discord-deploy
+  - *discord-general
 
   - name: k8s-homelab-repo
     type: git
@@ -25,7 +25,8 @@ jobs:
     plan:
       - in_parallel: *get-k8s-homelab-in-parrallel
 
-      - *get-secret-key-task
+      - task: get-secret-key
+        file: concourse-pipelines/common/tasks/get-bw-secret.yml
 
       - task: deploy-homelab-k8s
         config:
@@ -35,14 +36,15 @@ jobs:
             KUBE_CONTEXT: homelab
             REPO_DIR: k8s-homelab-repo
 
-    <<: *deploy-job-notifications
+    <<: *job-notifications
 
   - name: deploy-oracle
     serial: true
     plan:
       - in_parallel: *get-k8s-homelab-in-parrallel
 
-      - *get-secret-key-task
+      - task: get-secret-key
+        file: concourse-pipelines/common/tasks/get-bw-secret.yml
 
       - task: deploy-oracle-k8s
         config:
@@ -52,4 +54,4 @@ jobs:
             KUBE_CONTEXT: oracle
             REPO_DIR: k8s-homelab-repo
 
-    <<: *deploy-job-notifications
+    <<: *job-notifications

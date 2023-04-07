@@ -28,7 +28,9 @@ jobs:
           file: branches/branches.json
 
         - do:
-          - *get-secret-key-task
+          - task: get-secret-key
+            file: concourse-pipelines/common/tasks/get-bw-secret.yml
+
           - task: unencrypt-secrets
             config:
               platform: linux

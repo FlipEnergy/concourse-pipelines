@@ -1,6 +1,6 @@
 # main commands
 
-set-all-pipelines: decrypt-secrets personal-website k8s-homelab-branch-tracker deploy-k8s-homelab images-build misc-notifications clone-github-repos clean-decrypted-files
+set-all-pipelines: decrypt-secrets personal-website k8s-homelab-branch-tracker deploy-k8s-homelab terraform images-build misc-notifications clone-github-repos clean-decrypted-files
 
 login:
 	fly -t homelab login -kb -c https://concourse.tgp
@@ -24,6 +24,9 @@ k8s-homelab-branch-tracker:
 
 deploy-k8s-homelab:
 	cat common/reusable-blocks.yml k8s-homelab/common.yml k8s-homelab/deploy-k8s-homelab.yml | fly -t homelab set-pipeline -n -p $@ -c - -l common/vars/secrets.dec.yml
+
+terraform:
+	cat common/reusable-blocks.yml tf-pipeline/tf-pipeline.yml | fly -t homelab set-pipeline -n -p $@ -c - -l common/vars/secrets.dec.yml
 
 images-build:
 	cat common/reusable-blocks.yml image-build/image-build.yml | fly -t homelab set-pipeline -n -p $@ -c - -l common/vars/secrets.dec.yml

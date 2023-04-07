@@ -19,13 +19,13 @@ common-templates:
         tag: v1.1.0
 
   - name: resources
-    discord-deploy: &discord-deploy
-      name: discord-deploy
+    discord-general: &discord-general
+      name: discord-general
       type: webhook-resource-type
       icon: bell
       source:
           adapter: DiscordAdapter
-          url: ((discord_deploy_webhook_url))
+          url: ((discord_general_webhook_url))
       check_every: never
     discord-info: &discord-info
       name: discord-info
@@ -93,32 +93,13 @@ common-templates:
 
   - name: notifications
     notify-deploy-failure: &notify-deploy-failure
-      put: discord-deploy
+      put: discord-general
       params:
         message: "**FAILED** :boom: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
-    deploy-job-notifications: &deploy-job-notifications
+    job-notifications: &job-notifications
       on_success:
-        put: discord-deploy
+        put: discord-general
         params:
           message: "**SUCCESS** :rocket: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
       on_error: *notify-deploy-failure
       on_failure: *notify-deploy-failure
-
-  - name: tasks
-    get-secret-key-task: &get-secret-key-task
-      task: get-secret-key
-      config:
-        platform: linux
-        image_resource: *bitwarden-cli-image-resource
-        inputs:
-          - name: concourse-pipelines-repo
-        outputs:
-          - name: concourse-pipelines-repo
-          - name: secrets
-        params:
-          BW_ITEM: ((bitwarden_item))
-          BW_SERVER: ((bitwarden_server))
-          BW_USERNAME: ((bitwarden_username))
-          BW_PASSWORD: ((bitwarden_password))
-        run:
-          path: concourse-pipelines-repo/common/scripts/get-secret-key.sh

@@ -1,0 +1,69 @@
+resource_types:
+  - *webhook-resource-type
+
+resources:
+  - *discord-general
+
+  - name: tf-playground-repo
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/FlipEnergy/tf-playground.git
+      branch: main
+      <<: *github-creds
+      ignore_paths:
+        - README.md
+        - .gitignore
+        - renovate.json
+
+  - *concourse-pipelines-repo
+
+  - name: &weekly weekly
+    type: time
+    icon: timer-outline
+    check_every: 24h
+    source:
+      days: [Sunday]
+
+jobs:
+  - name: deploy-homelab
+    serial: true
+    plan:
+      - in_parallel:
+        - get: tf-playground-repo
+          trigger: true
+        - get: concourse-pipelines-repo
+        - get: *weekly
+          trigger: true
+
+      - task: get-tf-variables
+        file: concourse-pipelines/common/tasks/get-bw-secret.yml
+        params:
+          BW_ITEM: ((bitwarden_tf_vars_item_id))
+
+      - task: tf-plan
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: hashicorp/terraform:1.4.0
+          inputs:
+            - name: tf-playground-repo
+            - name: secret
+          run:
+            dir: tf-playground-repo/homelab
+            path: /bin/sh
+            args:
+              - -c
+              - |
+                set -eu
+
+                cp ../../secret/secret.txt terraform.tfvars
+
+                terraform init
+                terraform validate
+                terraform fmt -recursive -check -diff .
+                terraform plan -detailed-exitcode
+
+    <<: *job-notifications

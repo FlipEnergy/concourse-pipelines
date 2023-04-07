@@ -5,7 +5,7 @@ bw config server "$BW_SERVER"
 
 mkdir -p secrets
 
-echo "Getting secret key..."
+echo "Getting bitwarden secret..."
 
 retries=10
 while [ "$retries" -gt 0 ]; do
@@ -13,13 +13,13 @@ while [ "$retries" -gt 0 ]; do
     export BW_SESSION=$(bw login "$BW_USERNAME" "$BW_PASSWORD" --raw)
   fi
 
-  bw get item "$BW_ITEM" | jq -r '.notes' | base64 -d > secrets/secret.key
+  bw get item "$BW_ITEM" | jq -r '.notes' | base64 -d > secrets/secret.txt
 
-  if test -s secrets/secret.key ; then
-    echo 'Got the creds'
+  if test -s secrets/secret.txt ; then
+    echo 'Got the goods'
     exit 0
   fi
-  echo 'key not written, retrying'
+  echo 'file not written, retrying'
   retries=$((retries - 1))
   sleep $((10 - retries))
 done
