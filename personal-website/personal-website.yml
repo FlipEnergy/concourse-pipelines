@@ -93,6 +93,7 @@ jobs:
 
       - task: get-secret-key
         file: concourse-pipelines-repo/common/tasks/get-bw-secret.yml
+        params: *bitwarden-params
 
       - task: deploy-to-k8s
         config:

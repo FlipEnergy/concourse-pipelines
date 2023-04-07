@@ -36,6 +36,7 @@ jobs:
 
       - task: get-secret-key
         file: concourse-pipelines-repo/common/tasks/get-bw-secret.yml
+        params: *bitwarden-params
 
       - task: diff-homelab-k8s
         config:
@@ -54,6 +55,7 @@ jobs:
 
       - task: get-secret-key
         file: concourse-pipelines-repo/common/tasks/get-bw-secret.yml
+        params: *bitwarden-params
 
       - task: diff-oracle-k8s
         config:

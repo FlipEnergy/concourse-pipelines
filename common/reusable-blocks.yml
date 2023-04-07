@@ -1,5 +1,10 @@
 common-templates:
   - name: credential blocks
+    bitwarden-params: &bitwarden-params
+      BW_ITEM: ((bitwarden_gpg_key_item_id))
+      BW_SERVER: ((bitwarden_server))
+      BW_USERNAME: ((bitwarden_username))
+      BW_PASSWORD: ((bitwarden_password))
     docker-creds: &docker-creds
       username: ((docker_hub_username))
       password: ((docker_hub_password))

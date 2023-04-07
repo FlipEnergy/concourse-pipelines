@@ -30,6 +30,7 @@ jobs:
         - do:
           - task: get-secret-key
             file: concourse-pipelines-repo/common/tasks/get-bw-secret.yml
+            params: *bitwarden-params
 
           - task: unencrypt-secrets
             config:
