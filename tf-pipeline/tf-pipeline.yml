@@ -38,6 +38,7 @@ jobs:
 
       - task: get-tf-variables
         file: concourse-pipelines-repo/common/tasks/get-bw-secret.yml
+        vars: *docker-creds
         params:
           BW_ITEM: ((bitwarden_tf_vars_item_id))
           BW_SERVER: ((bitwarden_server))
