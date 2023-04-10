@@ -7,13 +7,15 @@ mkdir -p secrets
 
 echo "Getting bitwarden secret..."
 
-retries=10
-while [ "$retries" -gt 0 ]; do
-  if [ -z "$BW_SESSION" ]; then
-    export BW_SESSION=$(bw login "$BW_USERNAME" "$BW_PASSWORD" --raw)
-  fi
 
-  for field in $BW_FIELDS; do
+for field in $BW_FIELDS; do
+  retries=10
+  while [ "$retries" -gt 0 ]; do
+    if [ -z "$BW_SESSION" ]; then
+      echo "Making session"
+      export BW_SESSION=$(bw login "$BW_USERNAME" "$BW_PASSWORD" --raw)
+    fi
+
     echo "Getting ${field}..."
     bw get item "$BW_ITEM" | jq -r ".$field" > secrets/"$field".txt
 
@@ -26,6 +28,9 @@ while [ "$retries" -gt 0 ]; do
     retries=$((retries - 1))
     sleep $((10 - retries))
   done
-
 done
+
+
+
+
 exit 1
