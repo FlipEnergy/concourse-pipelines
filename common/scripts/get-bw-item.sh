@@ -21,7 +21,7 @@ for field in $BW_FIELDS; do
 
     if test -s secrets/"$field".txt ; then
       echo 'Got the goods'
-      continue
+      break
     fi
 
     echo 'file not written, retrying'
