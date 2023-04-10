@@ -26,7 +26,7 @@ resources:
       days: [Friday]
 
 jobs:
-  - name: terraform-plan
+  - name: tf-plan
     serial: true
     plan:
       - in_parallel:
@@ -40,12 +40,36 @@ jobs:
         file: concourse-pipelines-repo/common/tasks/get-bw-secret.yml
         vars: *docker-creds
         params:
-          BW_ITEMS: ((bitwarden_tf_vars_item_id)):terraform.tfvars ((bitwarden_tf_backend_item_id)):backend.tf
+          BW_ITEMS: ((bitwarden_gpg_key_item_id)):secret.key ((bitwarden_tf_vars_item_id)):terraform.tfvars ((bitwarden_tf_backend_item_id)):backend.tf ((bitwarden_oracle_key_item_id)):oracle.pem
           BW_SERVER: ((bitwarden_server))
           BW_USERNAME: ((bitwarden_username))
           BW_PASSWORD: ((bitwarden_password))
 
-      - task: tf-plan
+      - task: unencrypt-secrets
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              <<: *docker-creds
+              repository: mozilla/sops
+              tag: latest
+          inputs:
+            - name: concourse-pipelines-repo
+            - name: secrets
+          outputs:
+            - name: secrets
+          run:
+            path: /bin/sh
+            args:
+              - -c
+              - |
+                set -eu
+
+                concourse-pipelines-repo/common/scripts/import-secret-key.sh
+                cp ~/.kube/config secrets/kube_config
+
+      - task: terraform-plan
         config:
           platform: linux
           image_resource:
@@ -56,17 +80,23 @@ jobs:
               tag: 1.4.0
           inputs:
             - name: tf-playground-repo
+            - name: concourse-pipelines-repo
             - name: secrets
           run:
-            dir: tf-playground-repo/homelab
             path: /bin/sh
             args:
               - -c
               - |
                 set -eu
 
-                cp ../../secrets/terraform.tfvars terraform.tfvars
-                cp ../../secrets/backend.tf backend.tf
+                concourse-pipelines-repo/common/scripts/import-secret-key.sh
+
+                cp secrets/terraform.tfvars tf-playground-repo/homelab/terraform.tfvars
+                cp secrets/backend.tf tf-playground-repo/homelab/backend.tf
+                cp secrets/oracle.pem tf-playground-repo/homelab/oracle.pem
+                cp secrets/kube_config ~/.kube/config
+
+                cd tf-playground-repo/homelab
 
                 terraform init
                 terraform validate
