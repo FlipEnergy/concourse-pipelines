@@ -10,12 +10,14 @@ echo "Getting bitwarden secret..."
 echo "Making session"
 export BW_SESSION=$(bw login "$BW_USERNAME" "$BW_PASSWORD" --raw)
 
-for field in $BW_FIELDS; do
+for item in $BW_ITEMS; do
   for i in {1..3}; do
-    echo "Getting ${field}..."
-    bw get item "$BW_ITEM" | jq -r ".${field}" > "secrets/${field}.txt"
+    echo "Getting ${item}..."
+    item_id=${item%%:*}
+    item_output=${item#*:}
+    bw get item "$item_id" | jq -r ".notes" > "secrets/${item_output}"
 
-    if test -s "secrets/$field.txt" ; then
+    if test -s "secrets/${item_output}" ; then
       echo 'Got the goods'
       break
     fi

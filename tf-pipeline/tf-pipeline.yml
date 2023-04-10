@@ -40,8 +40,7 @@ jobs:
         file: concourse-pipelines-repo/common/tasks/get-bw-secret.yml
         vars: *docker-creds
         params:
-          BW_ITEM: ((bitwarden_tf_vars_item_id))
-          BW_FIELDS: notes fields[0].value
+          BW_ITEMS: ((bitwarden_tf_vars_item_id)):terraform.tfvars ((bitwarden_tf_backend_item_id)):backend.tf
           BW_SERVER: ((bitwarden_server))
           BW_USERNAME: ((bitwarden_username))
           BW_PASSWORD: ((bitwarden_password))
@@ -57,7 +56,7 @@ jobs:
               tag: 1.4.0
           inputs:
             - name: tf-playground-repo
-            - name: secret
+            - name: secrets
           run:
             dir: tf-playground-repo/homelab
             path: /bin/sh
@@ -66,9 +65,8 @@ jobs:
               - |
                 set -eu
 
-                cp ../../secret/notes.txt terraform.tfvars
-                # replaces <Redacted> in file backend.tf.template with content of ../../secret/fields[0].value and saves it as backend.tf
-                sed "s/<Redacted>/$(cat ../../secret/fields\[0\].value)/" backend.tf.template > backend.tf
+                cp ../../secrets/terraform.tfvars terraform.tfvars
+                cp ../../secrets/backend.tf backend.tf
 
                 terraform init
                 terraform validate
