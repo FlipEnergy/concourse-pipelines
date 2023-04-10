@@ -52,7 +52,9 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: hashicorp/terraform:1.4.0
+              <<: *docker-creds
+              repository: hashicorp/terraform
+              tag: 1.4.0
           inputs:
             - name: tf-playground-repo
             - name: secret
