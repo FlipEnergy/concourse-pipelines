@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 echo "Importing secret key..."
-gpg --import secrets/secret.txt
+gpg --import secrets/notes.txt
 
 echo "Decrypting kubectl config..."
 mkdir -p ~/.kube

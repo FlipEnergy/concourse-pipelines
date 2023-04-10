@@ -23,10 +23,10 @@ resources:
     icon: timer-outline
     check_every: 24h
     source:
-      days: [Sunday]
+      days: [Friday]
 
 jobs:
-  - name: deploy-homelab
+  - name: terraform-plan
     serial: true
     plan:
       - in_parallel:
@@ -41,6 +41,7 @@ jobs:
         vars: *docker-creds
         params:
           BW_ITEM: ((bitwarden_tf_vars_item_id))
+          BW_FIELDS: notes fields[0].value
           BW_SERVER: ((bitwarden_server))
           BW_USERNAME: ((bitwarden_username))
           BW_PASSWORD: ((bitwarden_password))
@@ -63,11 +64,13 @@ jobs:
               - |
                 set -eu
 
-                cp ../../secret/secret.txt terraform.tfvars
+                cp ../../secret/notes.txt terraform.tfvars
+                # replaces <Redacted> in file backend.tf.template with content of ../../secret/fields[0].value and saves it as backend.tf
+                sed "s/<Redacted>/$(cat ../../secret/fields\[0\].value)/" backend.tf.template > backend.tf
 
                 terraform init
                 terraform validate
                 terraform fmt -recursive -check -diff .
-                terraform plan -detailed-exitcode
+                terraform plan -lock=false -detailed-exitcode
 
     <<: *job-notifications
