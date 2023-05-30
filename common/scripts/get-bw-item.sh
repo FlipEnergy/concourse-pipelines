@@ -11,7 +11,7 @@ echo "Making session"
 export BW_SESSION=$(bw login "$BW_USERNAME" "$BW_PASSWORD" --raw)
 
 for item in $BW_ITEMS; do
-  for i in {1..3}; do
+  for i in $(seq 1 3); do
     echo "Getting ${item}..."
     item_id=${item%%:*}
     item_output=${item#*:}
