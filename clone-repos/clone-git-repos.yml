@@ -1,0 +1,100 @@
+resources:
+  - name: hourly
+    type: time
+    icon: timer-outline
+    source:
+      interval: 1h
+
+# begin job templates
+git-mirror-config: &git-mirror-config
+  platform: linux
+  image_resource:
+    type: registry-image
+    source:
+      <<: *docker-creds
+      repository: bitnami/git
+      tag: latest
+  outputs:
+    - name: repo
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        set -eu
+
+        mkdir -p ~/.ssh
+        echo '((concourse_clone_repo_private_key))' > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+
+        git clone --mirror "https://github.com/FlipEnergy/${REPO}.git"
+        cd "${REPO}.git"
+        GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git push --mirror "ssh://soft-serve-git.soft-serve-git/${REPO}"
+# end job templates
+
+jobs:
+  - name: concourse-pipelines
+    plan:
+      - get: hourly
+        trigger: true
+
+      - task: git-mirror
+        config:
+          <<: *git-mirror-config
+          params:
+            REPO: concourse-pipelines
+
+  - name: ansible-playground
+    plan:
+      - get: hourly
+        trigger: true
+
+      - task: git-mirror
+        config:
+          <<: *git-mirror-config
+          params:
+            REPO: ansible-playground
+
+  - name: container-images
+    plan:
+      - get: hourly
+        trigger: true
+
+      - task: git-mirror
+        config:
+          <<: *git-mirror-config
+          params:
+            REPO: container-images
+
+  - name: k8s-homelab
+    plan:
+      - get: hourly
+        trigger: true
+
+      - task: git-mirror
+        config:
+          <<: *git-mirror-config
+          params:
+            REPO: k8s-homelab
+
+  - name: personal-website
+    plan:
+      - get: hourly
+        trigger: true
+
+      - task: git-mirror
+        config:
+          <<: *git-mirror-config
+          params:
+            REPO: personal-website
+
+  - name: tf-playground
+    plan:
+      - get: hourly
+        trigger: true
+
+      - task: git-mirror
+        config:
+          <<: *git-mirror-config
+          params:
+            REPO: tf-playground
