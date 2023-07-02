@@ -1,9 +1,9 @@
 resources:
-  - name: hourly
+  - name: cron
     type: time
     icon: timer-outline
     source:
-      interval: 1h
+      interval: 15m
 
 # begin job templates
 git-mirror-config: &git-mirror-config
@@ -35,7 +35,7 @@ git-mirror-config: &git-mirror-config
 jobs:
   - name: concourse-pipelines
     plan:
-      - get: hourly
+      - get: cron
         trigger: true
 
       - task: git-mirror
@@ -46,7 +46,7 @@ jobs:
 
   - name: ansible-playground
     plan:
-      - get: hourly
+      - get: cron
         trigger: true
 
       - task: git-mirror
@@ -57,7 +57,7 @@ jobs:
 
   - name: container-images
     plan:
-      - get: hourly
+      - get: cron
         trigger: true
 
       - task: git-mirror
@@ -68,7 +68,7 @@ jobs:
 
   - name: k8s-homelab
     plan:
-      - get: hourly
+      - get: cron
         trigger: true
 
       - task: git-mirror
@@ -79,7 +79,7 @@ jobs:
 
   - name: personal-website
     plan:
-      - get: hourly
+      - get: cron
         trigger: true
 
       - task: git-mirror
@@ -90,7 +90,7 @@ jobs:
 
   - name: tf-playground
     plan:
-      - get: hourly
+      - get: cron
         trigger: true
 
       - task: git-mirror
