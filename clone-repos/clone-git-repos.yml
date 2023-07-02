@@ -29,7 +29,7 @@ git-mirror-config: &git-mirror-config
 
         git clone --mirror "https://github.com/FlipEnergy/${REPO}.git"
         cd "${REPO}.git"
-        GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git push --mirror "ssh://soft-serve-git.soft-serve-git/${REPO}"
+        GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git push --mirror "git@codeberg.org:FlipEnergy/${REPO}.git"
 # end job templates
 
 jobs:
