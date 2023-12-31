@@ -3,7 +3,7 @@
 set-all-pipelines: decrypt-secrets personal-site k8s-homelab-branch-tracker deploy-k8s-homelab terraform images-build misc-notifications clone-github-repos clean-decrypted-files
 
 login:
-	fly -t homelab login -kb -c https://concourse.pleasenoddos.com
+	fly -t homelab login -kb -c https://concourse.computersbarely.work
 
 sync:
 	fly -t homelab sync
