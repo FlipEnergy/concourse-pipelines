@@ -45,30 +45,6 @@ jobs:
           BW_USERNAME: ((bitwarden_username))
           BW_PASSWORD: ((bitwarden_password))
 
-      - task: unencrypt-secrets
-        config:
-          platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              <<: *docker-creds
-              repository: mozilla/sops
-              tag: latest
-          inputs:
-            - name: concourse-pipelines-repo
-            - name: secrets
-          outputs:
-            - name: secrets
-          run:
-            path: /bin/sh
-            args:
-              - -c
-              - |
-                set -eu
-
-                concourse-pipelines-repo/common/scripts/import-secret-key.sh
-                cp ~/.kube/config secrets/kube_config
-
       - task: terraform-plan
         config:
           platform: linux
@@ -80,7 +56,6 @@ jobs:
               tag: 1.7.0
           inputs:
             - name: tf-playground-repo
-            - name: concourse-pipelines-repo
             - name: secrets
           run:
             path: /bin/sh
@@ -89,12 +64,9 @@ jobs:
               - |
                 set -eu
 
-                concourse-pipelines-repo/common/scripts/import-secret-key.sh
-
                 cp secrets/terraform.tfvars tf-playground-repo/homelab/terraform.tfvars
                 cp secrets/backend.tf tf-playground-repo/homelab/backend.tf
                 cp secrets/oracle.pem tf-playground-repo/homelab/oracle.pem
-                cp secrets/kube_config ~/.kube/config
 
                 cd tf-playground-repo/homelab
 
