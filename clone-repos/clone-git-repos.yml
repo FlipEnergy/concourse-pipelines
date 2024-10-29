@@ -29,7 +29,8 @@ git-mirror-config: &git-mirror-config
 
         git clone --mirror "https://github.com/FlipEnergy/${REPO}.git"
         cd "${REPO}.git"
-        GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git push --mirror "git@codeberg.org:FlipEnergy/${REPO}.git"
+        # Push all branches and tags to the remote
+        GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git push --all "git@codeberg.org:FlipEnergy/${REPO}.git"
 # end job templates
 
 jobs:
