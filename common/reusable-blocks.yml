@@ -68,7 +68,6 @@ common-templates:
     helmsman-image-resource: &helmsman-image-resource
       type: registry-image
       source:
-        <<: *docker-creds
         repository: ghcr.io/mkubaczyk/helmsman
         tag: v4.0.1
     helm-image-resource: &helm-image-resource
