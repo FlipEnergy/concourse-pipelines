@@ -12,7 +12,7 @@ git-mirror-config: &git-mirror-config
     type: registry-image
     source:
       <<: *docker-creds
-      repository: bitnami/git
+      repository: alpine/git
       tag: latest
   outputs:
     - name: repo
@@ -30,7 +30,7 @@ git-mirror-config: &git-mirror-config
         git clone --mirror "https://github.com/FlipEnergy/${REPO}.git"
         cd "${REPO}.git"
         # Push all branches and tags to the remote
-        GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git push --force --all "git@codeberg.org:FlipEnergy/${REPO}.git"
+        GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git push --force --all "ssh://git@codeberg.org/FlipEnergy/${REPO}.git"
 # end job templates
 
 jobs:
