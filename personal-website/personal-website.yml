@@ -105,7 +105,7 @@ jobs:
             - name: concourse-pipelines-repo
             - name: secrets
           params:
-            KUBE_CONTEXT: oracle
+            KUBE_CONTEXT: homelab
             REPO_DIR: *site-repo
           run:
             path: concourse-pipelines-repo/personal-website/deploy-to-k8s.sh
