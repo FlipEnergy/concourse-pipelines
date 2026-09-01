@@ -15,4 +15,4 @@ helm repo add bjw-s https://bjw-s-labs.github.io/helm-charts
 echo
 echo "Deploying version: [${DENNIS_SITE_VERSION}]"
 echo
-helm upgrade -i -n default dennis-site bjw-s/app-template --version 5.1.0 -f values.yaml --set-string "image.tag=${DENNIS_SITE_VERSION}" --wait
+helm upgrade -i -n default dennis-site bjw-s/app-template --version 5.1.0 -f values.yaml --set-string "controllers.main.containers.image.tag=${DENNIS_SITE_VERSION}" --wait
