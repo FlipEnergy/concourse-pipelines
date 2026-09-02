@@ -68,7 +68,6 @@ jobs:
             - name: image
           params:
             CONTEXT: *site-repo
-            IMAGE_PLATFORM: linux/arm64
           run:
             path: build
 
