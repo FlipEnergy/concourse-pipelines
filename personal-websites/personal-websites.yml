@@ -1,0 +1,226 @@
+template:
+  - name: resource options
+    github_resource_options: &github_resource_options
+      type: git
+      icon: github
+      check_every: 30m
+
+    image_resource_options: &image_resource_options
+      type: registry-image
+      icon: docker
+
+resource_types:
+  - *webhook-resource-type
+
+resources:
+  - *discord-general
+
+  # Repo to pull for building image
+  - name: &site-repo personal-website-repo
+    <<: *github_resource_options
+    source:
+      uri: https://github.com/FlipEnergy/personal-website.git
+      branch: main
+      <<: *github-creds
+      ignore_paths:
+        - Makefile
+        - README.md
+        - .gitignore
+        - renovate.json
+
+  - name: &clare-repo clare-website-repo
+    <<: *github_resource_options
+    source:
+      uri: https://github.com/claricen/portfolio.git
+      branch: main
+      <<: *github-creds
+      ignore_paths: 
+        - Makefile
+        - README.md
+        - .gitignore
+        - renovate.json
+
+  - *concourse-pipelines-repo
+
+  # Where we will push the image to
+  - name: &docker-personal-repo docker-hub-personal-repo
+    <<: *image_resource_options
+    source:
+      repository: flipenergy/flipenergy
+      <<: *docker-creds
+      tag: latest
+
+  # Where we will push the image to
+  - name: &docker-clare-repo docker-hub-clare-repo
+    <<: *image_resource_options
+    source:
+      repository: flipenergy/clare-portfolio
+      <<: *docker-creds
+      tag: latest
+
+jobs:
+  - name: build-and-push-image
+    serial: true
+    plan:
+      - get: *site-repo
+        trigger: true
+
+      - task: gen-static-site
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              <<: *docker-creds
+              repository: klakegg/hugo
+              tag: alpine
+          inputs:
+            - name: *site-repo
+          outputs:
+            - name: *site-repo
+          run:
+            dir: *site-repo
+            path: sh
+            args:
+              - -ec
+              - >
+                cd flipenergy && hugo && cp -r public ../public
+
+      - task: build-image
+        privileged: true
+        config:
+          platform: linux
+          image_resource: *oci-build-image-resource
+          inputs:
+            - name: *site-repo
+          outputs:
+            - name: image
+          params:
+            CONTEXT: *site-repo
+          run:
+            path: build
+
+      - put: *docker-personal-repo
+        params:
+          image: image/image.tar
+          additional_tags: personal-website-repo/.git/short_ref
+
+    # No on success notification
+    on_error: *notify-deploy-failure
+    on_failure: *notify-deploy-failure
+
+  - name: build-and-push-clare-image
+    serial: true
+    plan:
+      - get: *clare-repo
+        trigger: true
+
+      - task: gen-static-site
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              <<: *docker-creds
+              repository: klakegg/hugo
+              tag: alpine
+          inputs:
+            - name: *clare-repo
+          outputs:
+            - name: *clare-repo
+          run:
+            dir: *clare-repo
+            path: sh
+            args:
+              - -ec
+              - >
+                cd TODO_DIR && hugo && cp -r public ../public
+
+      - task: build-image
+        privileged: true
+        config:
+          platform: linux
+          image_resource: *oci-build-image-resource
+          inputs:
+            - name: *clare-repo
+          outputs:
+            - name: image
+          params:
+            CONTEXT: *clare-repo
+          run:
+            path: build
+
+      - put: *docker-clare-repo
+        params:
+          image: image/image.tar
+          additional_tags: clare-website-repo/.git/short_ref
+
+    # No on success notification
+    on_error: *notify-deploy-failure
+    on_failure: *notify-deploy-failure
+
+  - name: deploy-website-to-k8s
+    serial: true
+    plan:
+      - in_parallel:
+        - get: *site-repo
+          passed: [build-and-push-image]
+        - get: *docker-personal-repo
+          trigger: true
+          passed: [build-and-push-image]
+        - get: concourse-pipelines-repo
+
+      - task: get-secret-key
+        file: concourse-pipelines-repo/common/tasks/get-bw-secret.yml
+        vars: *docker-creds
+        params: *bitwarden-params
+
+      - task: deploy-to-k8s
+        config:
+          platform: linux
+          image_resource: *helmsman-image-resource
+          inputs:
+            - name: *site-repo
+`            - name: concourse-pipelines-repo
+            - name: secrets
+          params:
+            KUBE_CONTEXT: homelab
+            REPO_DIR: *site-repo
+            RELEASE_NAME: dennis-site
+          run:
+            path: concourse-pipelines-repo/personal-website/deploy-to-k8s.sh
+
+    <<: *job-notifications
+
+  - name: deploy-clare-website-to-k8s
+    serial: true
+    plan:
+      - in_parallel:
+        - get: *site-repo
+          passed: [build-and-push-image]
+        - get: *docker-clare-repo
+          trigger: true
+          passed: [build-and-push-clare-image]
+        - get: concourse-pipelines-repo
+
+      - task: get-secret-key
+        file: concourse-pipelines-repo/common/tasks/get-bw-secret.yml
+        vars: *docker-creds
+        params: *bitwarden-params
+
+      - task: deploy-to-k8s
+        config:
+          platform: linux
+          image_resource: *helmsman-image-resource
+          inputs:
+            - name: *clare-repo
+            - name: concourse-pipelines-repo
+            - name: secrets
+          params:
+            KUBE_CONTEXT: homelab
+            REPO_DIR: *clare-repo
+            RELEASE_NAME: clare-site
+          run:
+            path: concourse-pipelines-repo/personal-website/deploy-to-k8s.sh
+
+    <<: *job-notifications
