@@ -181,7 +181,7 @@ jobs:
           image_resource: *helmsman-image-resource
           inputs:
             - name: *site-repo
-`            - name: concourse-pipelines-repo
+            - name: concourse-pipelines-repo
             - name: secrets
           params:
             KUBE_CONTEXT: homelab
