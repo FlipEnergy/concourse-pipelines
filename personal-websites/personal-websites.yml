@@ -188,7 +188,7 @@ jobs:
             REPO_DIR: *site-repo
             RELEASE_NAME: dennis-site
           run:
-            path: concourse-pipelines-repo/personal-website/deploy-to-k8s.sh
+            path: concourse-pipelines-repo/personal-websites/deploy-to-k8s.sh
 
     <<: *job-notifications
 
@@ -221,6 +221,6 @@ jobs:
             REPO_DIR: *clare-repo
             RELEASE_NAME: clare-site
           run:
-            path: concourse-pipelines-repo/personal-website/deploy-to-k8s.sh
+            path: concourse-pipelines-repo/personal-websites/deploy-to-k8s.sh
 
     <<: *job-notifications
