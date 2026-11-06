@@ -17,4 +17,4 @@ helm repo add bjw-s https://bjw-s-labs.github.io/helm-charts
 echo
 echo "Deploying version: [${SITE_VERSION}]"
 echo
-helm upgrade -i -n default "${RELEASE_NAME} bjw-s/app-template --version "${APP_TEMPLATE_VERSION} -f values.yaml --set-string "controllers.main.containers.main.image.tag=${SITE_VERSION}" --wait
+helm upgrade -i -n default "${RELEASE_NAME}" bjw-s/app-template --version "${APP_TEMPLATE_VERSION}" -f values.yaml --set-string "controllers.main.containers.main.image.tag=${SITE_VERSION}" --wait
