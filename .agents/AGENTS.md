@@ -27,7 +27,7 @@ Concourse itself is deployed from the `k8s-homelab` repo.
 | `common/vars/secrets.enc.yml` | sops/PGP-encrypted pipeline vars (`((var))` values). |
 | `common/misc/kube-config.enc.yml` | sops-encrypted kubeconfig used by deploy tasks. |
 | `personal-websites/` | `personal-sites` pipeline: Hugo build → OCI image → Docker Hub → `helm upgrade` with bjw-s app-template. |
-| `k8s-homelab/` | `deploy-k8s-homelab` (Helmsman `-apply` on `main`), `k8s-homelab-branch-tracker` (sets one `k8s-homelab-diff` instanced pipeline per non-main branch running `-show-diff`). `common.yml` holds shared anchors; `pipeline-templates/` is compiled inside CI. |
+| `k8s-homelab/` | `deploy-k8s-homelab` (Helmsman `-apply` on `main`), `k8s-homelab-branch-tracker` (sets one `k8s-homelab-diff` instanced pipeline per non-main branch running `-show-diff`). `common.yml` holds shared anchors; `pipeline-templates/` is compiled inside CI. The helmsman image (`helmsman-image-resource` in `common/reusable-blocks.yml`) bundles helm and its plugins; keep its tag in sync with helmsman in `k8s-homelab/mise.toml`. |
 | `tf-pipeline/` | `terraform` pipeline: weekly (Friday) + on-push `tofu plan` (OpenTofu, `ghcr.io/opentofu/opentofu` image) of `tf-playground/homelab`. Keep the image tag in sync with `tf-playground/homelab/mise.toml`. |
 | `image-build/` | `images-build` pipeline: builds `container-images` repo images when upstream releases. |
 | `notification-jobs/` | `misc-notifications`: weekday Discord reminders (America/Vancouver). |

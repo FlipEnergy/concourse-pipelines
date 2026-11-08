@@ -69,7 +69,7 @@ common-templates:
       type: registry-image
       source:
         repository: ghcr.io/mkubaczyk/helmsman
-        tag: v4.0.1
+        tag: v4.0.5
     helm-image-resource: &helm-image-resource
       type: registry-image
       source:
