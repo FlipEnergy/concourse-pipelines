@@ -32,6 +32,23 @@ template:
             build
     put_image_params: &put_image_params
       image: image/image.tar
+    # Nextcloud: the upstream tag (e.g. 33.0.10-apache) is pushed as an extra tag,
+    # written next to the image by the build since it isn't a plain version file.
+    nextcloud_build_image_config: &nextcloud_build_image_config
+      <<: *build_image_config
+      run:
+        path: sh
+        args:
+          - -ec
+          - >
+            VERSION=$(egrep -o '([0-9]{1,}\.)+[0-9]{1,}' upstream/tag) &&
+            echo VERSION=${VERSION} > build_args_file &&
+            export CONTEXT=${CI_REPO_DIR}/nextcloud &&
+            build &&
+            echo ${VERSION}-apache > image/additional_tags
+    nextcloud_put_params: &nextcloud_put_params
+      <<: *put_image_params
+      additional_tags: image/additional_tags
 
   - name: notifications
     notify-failure: &notify-failure
@@ -106,6 +123,54 @@ resources:
       <<: *docker-creds
       repository: flipenergy/restic
       tag: latest
+
+  # nextcloud: one upstream/push pair per Nextcloud major. Nextcloud upgrades one
+  # major at a time, so keep every major still needed to step k8s-homelab forward
+  # and drop old ones once it's past them. A new digest for an existing upstream
+  # tag (e.g. a PHP base rebuild) also triggers a rebuild.
+  - name: &nextcloud_33_release nextcloud-33-upstream-repo
+    <<: *image_resource_options
+    check_every: 30m
+    source: &nextcloud_upstream_source
+      <<: *docker-creds
+      repository: nextcloud
+      variant: apache
+      semver_constraint: ">= 33.0.0, < 34.0.0"
+
+  - name: &nextcloud_33_docker nextcloud-33-docker-repo
+    <<: *image_resource_options
+    source:
+      <<: *docker-creds
+      repository: flipenergy/nextcloud
+      tag: 33-apache
+
+  - name: &nextcloud_34_release nextcloud-34-upstream-repo
+    <<: *image_resource_options
+    check_every: 30m
+    source:
+      <<: *nextcloud_upstream_source
+      semver_constraint: ">= 34.0.0, < 35.0.0"
+
+  - name: &nextcloud_34_docker nextcloud-34-docker-repo
+    <<: *image_resource_options
+    source:
+      <<: *docker-creds
+      repository: flipenergy/nextcloud
+      tag: 34-apache
+
+  - name: &nextcloud_35_release nextcloud-35-upstream-repo
+    <<: *image_resource_options
+    check_every: 30m
+    source:
+      <<: *nextcloud_upstream_source
+      semver_constraint: ">= 35.0.0, < 36.0.0"
+
+  - name: &nextcloud_35_docker nextcloud-35-docker-repo
+    <<: *image_resource_options
+    source:
+      <<: *docker-creds
+      repository: flipenergy/nextcloud
+      tag: 35-apache
 
   # yq
   - name: &yq_release yq-github-release
@@ -202,6 +267,81 @@ jobs:
         params:
           <<: *put_image_params
           additional_tags: restic-upstream-repo/tag
+    <<: *job-notifications
+
+  - name: nextcloud-33-image
+    serial: true
+    plan:
+      - in_parallel:
+        - get: upstream
+          resource: *nextcloud_33_release
+          trigger: true
+          params:
+            skip_download: true
+        - get: *ci_repo
+
+      - task: build-image
+        privileged: true
+        config:
+          <<: *nextcloud_build_image_config
+          inputs:
+            - name: upstream
+            - name: *ci_repo
+          params:
+            <<: *build_image_params
+
+      - put: *nextcloud_33_docker
+        params: *nextcloud_put_params
+    <<: *job-notifications
+
+  - name: nextcloud-34-image
+    serial: true
+    plan:
+      - in_parallel:
+        - get: upstream
+          resource: *nextcloud_34_release
+          trigger: true
+          params:
+            skip_download: true
+        - get: *ci_repo
+
+      - task: build-image
+        privileged: true
+        config:
+          <<: *nextcloud_build_image_config
+          inputs:
+            - name: upstream
+            - name: *ci_repo
+          params:
+            <<: *build_image_params
+
+      - put: *nextcloud_34_docker
+        params: *nextcloud_put_params
+    <<: *job-notifications
+
+  - name: nextcloud-35-image
+    serial: true
+    plan:
+      - in_parallel:
+        - get: upstream
+          resource: *nextcloud_35_release
+          trigger: true
+          params:
+            skip_download: true
+        - get: *ci_repo
+
+      - task: build-image
+        privileged: true
+        config:
+          <<: *nextcloud_build_image_config
+          inputs:
+            - name: upstream
+            - name: *ci_repo
+          params:
+            <<: *build_image_params
+
+      - put: *nextcloud_35_docker
+        params: *nextcloud_put_params
     <<: *job-notifications
 
   - name: yq-ubuntu-image

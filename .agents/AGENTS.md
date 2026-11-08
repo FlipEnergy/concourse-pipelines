@@ -29,7 +29,7 @@ Concourse itself is deployed from the `k8s-homelab` repo.
 | `personal-websites/` | `personal-sites` pipeline: Hugo build → OCI image → Docker Hub → `helm upgrade` with bjw-s app-template. |
 | `k8s-homelab/` | `deploy-k8s-homelab` (Helmsman `-apply` on `main`), `k8s-homelab-branch-tracker` (sets one `k8s-homelab-diff` instanced pipeline per non-main branch running `-show-diff`). `common.yml` holds shared anchors; `pipeline-templates/` is compiled inside CI. The helmsman image (`helmsman-image-resource` in `common/reusable-blocks.yml`) bundles helm and its plugins; keep its tag in sync with helmsman in `k8s-homelab/mise.toml`. |
 | `tf-pipeline/` | `terraform` pipeline: weekly (Friday) + on-push `tofu plan` (OpenTofu, `ghcr.io/opentofu/opentofu` image) of `tf-playground/homelab`. Keep the image tag in sync with `tf-playground/homelab/mise.toml`. |
-| `image-build/` | `images-build` pipeline: builds `container-images` repo images when upstream releases. |
+| `image-build/` | `images-build` pipeline: builds `container-images` repo images when upstream releases. Nextcloud has one resource pair + job per major (`nextcloud-<major>-image`); add a major before `k8s-homelab` steps to it, and drop majors it has moved past. |
 | `notification-jobs/` | `misc-notifications`: weekday Discord reminders (America/Vancouver). |
 | `clone-repos/` | `clone-github-repos`: every 15m, `git clone --mirror` GitHub repos and force-push to `codeberg.org/FlipEnergy/<repo>`. |
 
