@@ -65,10 +65,13 @@ common-templates:
         <<: *docker-creds
         repository: alpine
         tag: latest
+    # flipenergy/helmsman = upstream helmsman + Helm 4 helm-secrets/helm-diff plugins
+    # (container-images/helmsman). Tags mirror upstream.
     helmsman-image-resource: &helmsman-image-resource
       type: registry-image
       source:
-        repository: ghcr.io/mkubaczyk/helmsman
+        <<: *docker-creds
+        repository: flipenergy/helmsman
         tag: v4.0.5
     helm-image-resource: &helm-image-resource
       type: registry-image

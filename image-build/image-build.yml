@@ -172,6 +172,31 @@ resources:
       repository: flipenergy/nextcloud
       tag: 35-apache
 
+  # helmsman: rebuilt on a new upstream release, or when its Dockerfile changes
+  # (e.g. plugin version bumps).
+  - name: &helmsman_release helmsman-upstream-repo
+    <<: *image_resource_options
+    check_every: 30m
+    source:
+      repository: ghcr.io/mkubaczyk/helmsman
+
+  - name: &helmsman_dockerfile container-images-helmsman
+    type: git
+    icon: github
+    source:
+      <<: *github-creds
+      uri: https://github.com/FlipEnergy/container-images.git
+      branch: main
+      paths:
+        - helmsman
+
+  - name: &helmsman_docker helmsman-docker-repo
+    <<: *image_resource_options
+    source:
+      <<: *docker-creds
+      repository: flipenergy/helmsman
+      tag: latest
+
   # yq
   - name: &yq_release yq-github-release
     <<: *github_resource_options
@@ -348,6 +373,38 @@ jobs:
       - put: *nextcloud_35_docker
         no_get: true
         params: *nextcloud_put_params
+    <<: *job-notifications
+
+  - name: helmsman-image
+    serial: true
+    plan:
+      - in_parallel:
+        - get: *helmsman_release
+          trigger: true
+          params:
+            skip_download: true
+        - get: *ci_repo
+          resource: *helmsman_dockerfile
+          trigger: true
+
+      - task: build-image
+        privileged: true
+        config:
+          <<: *build_image_config
+          inputs:
+            - name: *helmsman_release
+            - name: *ci_repo
+          params:
+            <<: *build_image_params
+            DOCKER_CONTEXT_DIR: helmsman
+            VERSION_DIR_PATH: *helmsman_release
+            VERSION_FILE: tag
+
+      - put: *helmsman_docker
+        no_get: true
+        params:
+          <<: *put_image_params
+          additional_tags: helmsman-upstream-repo/tag
     <<: *job-notifications
 
   - name: yq-ubuntu-image
