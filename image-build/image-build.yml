@@ -210,6 +210,7 @@ jobs:
             VERSION_FILE: version
 
       - put: *bitwarden_docker
+        no_get: true
         params:
           <<: *put_image_params
           additional_tags: bitwarden-cli-github-release/version
@@ -237,6 +238,7 @@ jobs:
             VERSION_FILE: .git/ref
 
       - put: *nextcloud_news_updater_docker
+        no_get: true
         params:
           <<: *put_image_params
           additional_tags: nextcloud-news-updater-tag/.git/ref
@@ -264,6 +266,7 @@ jobs:
             VERSION_FILE: tag
 
       - put: *restic_docker
+        no_get: true
         params:
           <<: *put_image_params
           additional_tags: restic-upstream-repo/tag
@@ -291,6 +294,7 @@ jobs:
             <<: *build_image_params
 
       - put: *nextcloud_33_docker
+        no_get: true
         params: *nextcloud_put_params
     <<: *job-notifications
 
@@ -316,6 +320,7 @@ jobs:
             <<: *build_image_params
 
       - put: *nextcloud_34_docker
+        no_get: true
         params: *nextcloud_put_params
     <<: *job-notifications
 
@@ -341,6 +346,7 @@ jobs:
             <<: *build_image_params
 
       - put: *nextcloud_35_docker
+        no_get: true
         params: *nextcloud_put_params
     <<: *job-notifications
 
@@ -366,6 +372,7 @@ jobs:
             VERSION_FILE: version
 
       - put: *yq_docker
+        no_get: true
         params:
           <<: *put_image_params
           additional_tags: yq-github-release/version
