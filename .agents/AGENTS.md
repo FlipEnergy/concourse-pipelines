@@ -28,7 +28,7 @@ Concourse itself is deployed from the `k8s-homelab` repo.
 | `common/misc/kube-config.enc.yml` | sops-encrypted kubeconfig used by deploy tasks. |
 | `personal-websites/` | `personal-sites` pipeline: Hugo build → OCI image → Docker Hub → `helm upgrade` with bjw-s app-template. |
 | `k8s-homelab/` | `deploy-k8s-homelab` (Helmsman `-apply` on `main`), `k8s-homelab-branch-tracker` (sets one `k8s-homelab-diff` instanced pipeline per non-main branch running `-show-diff`). `common.yml` holds shared anchors; `pipeline-templates/` is compiled inside CI. |
-| `tf-pipeline/` | `terraform` pipeline: weekly (Friday) + on-push `terraform plan` of `tf-playground/homelab`. |
+| `tf-pipeline/` | `terraform` pipeline: weekly (Friday) + on-push `tofu plan` (OpenTofu, `ghcr.io/opentofu/opentofu` image) of `tf-playground/homelab`. Keep the image tag in sync with `tf-playground/homelab/mise.toml`. |
 | `image-build/` | `images-build` pipeline: builds `container-images` repo images when upstream releases. |
 | `notification-jobs/` | `misc-notifications`: weekday Discord reminders (America/Vancouver). |
 | `clone-repos/` | `clone-github-repos`: every 15m, `git clone --mirror` GitHub repos and force-push to `codeberg.org/FlipEnergy/<repo>`. |
@@ -84,6 +84,6 @@ Other drift:
 ## Related repos (siblings in `~/repos`)
 
 - `k8s-homelab` — Helmsman desired-state files deployed by this repo.
-- `tf-playground` — Terraform planned by this repo.
+- `tf-playground` — OpenTofu config planned by this repo.
 - `container-images` — Dockerfiles built by `images-build`.
 - `personal-website` — Hugo site built/deployed by `personal-sites`.

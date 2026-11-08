@@ -45,15 +45,14 @@ jobs:
           BW_USERNAME: ((bitwarden_username))
           BW_PASSWORD: ((bitwarden_password))
 
-      - task: terraform-plan
+      - task: tofu-plan
         config:
           platform: linux
           image_resource:
             type: registry-image
             source:
-              <<: *docker-creds
-              repository: hashicorp/terraform
-              tag: 1.7.0
+              repository: ghcr.io/opentofu/opentofu
+              tag: 1.13.9
           inputs:
             - name: tf-playground-repo
             - name: secrets
@@ -70,9 +69,9 @@ jobs:
 
                 cd tf-playground-repo/homelab
 
-                terraform init
-                terraform validate
-                terraform fmt -recursive -check -diff .
-                terraform plan -lock=false -detailed-exitcode
+                tofu init
+                tofu validate
+                tofu fmt -recursive -check -diff .
+                tofu plan -lock=false -detailed-exitcode
 
     <<: *job-notifications
