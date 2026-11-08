@@ -78,8 +78,7 @@ Setting pipelines changes the live CI server — ask before running any `fly set
 - `personal-websites/deploy-to-k8s.sh` has broken quoting in the `helm upgrade` line (`"${RELEASE_NAME} bjw-s/app-template --version "${APP_TEMPLATE_VERSION}`).
 
 Other drift:
-- `k8s-homelab/pipeline-templates/diff-k8s-homelab.yml` still has a `diff-oracle` job using `oracle.yaml`, which no longer exists in `k8s-homelab`.
-- `tf-pipeline` still fetches an `oracle.pem` from Bitwarden; Oracle is now only used for the TF state bucket/budget.
+- `tf-pipeline` still fetches an `oracle.pem` from Bitwarden. It's still needed: tf-playground's OCI provider (TF state bucket, budget) reads it via `private_key_path`.
 
 ## Related repos (siblings in `~/repos`)
 

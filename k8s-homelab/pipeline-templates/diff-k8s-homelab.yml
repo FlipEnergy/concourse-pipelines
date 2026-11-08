@@ -48,23 +48,3 @@ jobs:
             REPO_DIR: k8s-homelab-repo
 
     <<: *branch-job-notifications
-
-  - name: diff-oracle
-    serial: true
-    plan:
-      - in_parallel: *get-k8s-homelab-in-parrallel
-
-      - task: get-secret-key
-        file: concourse-pipelines-repo/common/tasks/get-bw-secret.yml
-        vars: *docker-creds
-        params: *bitwarden-params
-
-      - task: diff-oracle-k8s
-        config:
-          <<: *helmsman-task-config
-          params:
-            ACTION: -show-diff
-            KUBE_CONTEXT: oracle
-            REPO_DIR: k8s-homelab-repo
-
-    <<: *branch-job-notifications
