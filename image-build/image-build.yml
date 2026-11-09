@@ -128,41 +128,13 @@ resources:
   # major at a time, so keep every major still needed to step k8s-homelab forward
   # and drop old ones once it's past them. A new digest for an existing upstream
   # tag (e.g. a PHP base rebuild) also triggers a rebuild.
-  - name: &nextcloud_33_release nextcloud-33-upstream-repo
+  - name: &nextcloud_35_release nextcloud-35-upstream-repo
     <<: *image_resource_options
     check_every: 30m
     source: &nextcloud_upstream_source
       <<: *docker-creds
       repository: nextcloud
       variant: apache
-      semver_constraint: ">= 33.0.0, < 34.0.0"
-
-  - name: &nextcloud_33_docker nextcloud-33-docker-repo
-    <<: *image_resource_options
-    source:
-      <<: *docker-creds
-      repository: flipenergy/nextcloud
-      tag: 33-apache
-
-  - name: &nextcloud_34_release nextcloud-34-upstream-repo
-    <<: *image_resource_options
-    check_every: 30m
-    source:
-      <<: *nextcloud_upstream_source
-      semver_constraint: ">= 34.0.0, < 35.0.0"
-
-  - name: &nextcloud_34_docker nextcloud-34-docker-repo
-    <<: *image_resource_options
-    source:
-      <<: *docker-creds
-      repository: flipenergy/nextcloud
-      tag: 34-apache
-
-  - name: &nextcloud_35_release nextcloud-35-upstream-repo
-    <<: *image_resource_options
-    check_every: 30m
-    source:
-      <<: *nextcloud_upstream_source
       semver_constraint: ">= 35.0.0, < 36.0.0"
 
   - name: &nextcloud_35_docker nextcloud-35-docker-repo
@@ -295,58 +267,6 @@ jobs:
         params:
           <<: *put_image_params
           additional_tags: restic-upstream-repo/tag
-    <<: *job-notifications
-
-  - name: nextcloud-33-image
-    serial: true
-    plan:
-      - in_parallel:
-        - get: upstream
-          resource: *nextcloud_33_release
-          trigger: true
-          params:
-            skip_download: true
-        - get: *ci_repo
-
-      - task: build-image
-        privileged: true
-        config:
-          <<: *nextcloud_build_image_config
-          inputs:
-            - name: upstream
-            - name: *ci_repo
-          params:
-            <<: *build_image_params
-
-      - put: *nextcloud_33_docker
-        no_get: true
-        params: *nextcloud_put_params
-    <<: *job-notifications
-
-  - name: nextcloud-34-image
-    serial: true
-    plan:
-      - in_parallel:
-        - get: upstream
-          resource: *nextcloud_34_release
-          trigger: true
-          params:
-            skip_download: true
-        - get: *ci_repo
-
-      - task: build-image
-        privileged: true
-        config:
-          <<: *nextcloud_build_image_config
-          inputs:
-            - name: upstream
-            - name: *ci_repo
-          params:
-            <<: *build_image_params
-
-      - put: *nextcloud_34_docker
-        no_get: true
-        params: *nextcloud_put_params
     <<: *job-notifications
 
   - name: nextcloud-35-image
