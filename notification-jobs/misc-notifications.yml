@@ -48,7 +48,7 @@ jobs:
 
       - put: discord-healthy-habits
         params:
-          message: "**DRINK WATER!** :droplet:"
+          message: "**DRINK WATER!** :P"
 
   - name: get-up-and-move
     plan:
@@ -57,4 +57,4 @@ jobs:
 
       - put: discord-healthy-habits
         params:
-          message: "**GET UP AND MOVE!** :person_walking:"
+          message: "**GET UP AND MOVE!** (>^_^)>"

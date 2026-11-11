@@ -96,11 +96,11 @@ common-templates:
     notify-deploy-failure: &notify-deploy-failure
       put: discord-general
       params:
-        message: "**FAILED** :boom: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
+        message: "**FAILED** x_x **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
     job-notifications: &job-notifications
       on_success:
         put: discord-general
         params:
-          message: "**SUCCESS** :rocket: **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
+          message: "**SUCCESS** :D **[${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}](${BUILD_URL})**"
       on_error: *notify-deploy-failure
       on_failure: *notify-deploy-failure
