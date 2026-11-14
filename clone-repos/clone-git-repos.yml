@@ -45,17 +45,6 @@ jobs:
           params:
             REPO: concourse-pipelines
 
-  - name: ansible-playground
-    plan:
-      - get: cron
-        trigger: true
-
-      - task: git-mirror
-        config:
-          <<: *git-mirror-config
-          params:
-            REPO: ansible-playground
-
   - name: container-images
     plan:
       - get: cron
