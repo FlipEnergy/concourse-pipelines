@@ -2,7 +2,7 @@
 
 Concourse CI pipeline definitions for a personal homelab (owner: FlipEnergy / Dennis Zhang).
 Target Concourse: `https://concourse.computersbarely.work`, fly target `homelab`.
-Concourse itself is deployed from the `k8s-homelab` repo.
+Concourse itself is deployed from the `k8s-homelab` repo, onto the same cluster these pipelines deploy to: a 3-node Talos Linux cluster (`k8s-homelab/talos/`).
 
 ## Ground rules for agents (read first)
 
@@ -11,6 +11,12 @@ Concourse itself is deployed from the `k8s-homelab` repo.
 - Before committing, review the staged diff (`git diff --cached`) for secret-looking values and for files that should be ignored. Never use `git add -f` on an ignored file, and never weaken `.gitignore` to make a file committable.
 - Never put secret values into tracked files, commit messages, PR descriptions, logs, or chat output — not even partially or "redacted by hand".
 - Encrypted files (`*.enc.yml`, sops `*-secrets.yaml`) may be read as-is, but only change them with the proper tool (`sops`); never decrypt them unless asked.
+
+**Public repo**
+- This repository is public, so anyone can read everything committed: code, comments, docs, commit messages, PR descriptions, and this file.
+- Don't reveal more than a change needs, especially details that would help an attacker: internal network layout (LAN IPs, subnets, VIPs, gateway/DNS servers), internal machine names, hardware models, serials and disk IDs, open ports and port forwards, exposed service versions, disabled hardening or other security trade-offs, backup locations and schedules, and personal details beyond what is already public.
+- When a config file must contain such a detail for things to work (e.g. an IP the system reads), keep it in that file only. Don't repeat or explain it in docs, comments or commit messages; in prose, say "the NAS" or "the API VIP" instead.
+- If you're unsure whether something is too revealing, leave it out or ask the owner.
 
 **Git-ignored files**
 - Do not read, print, search, or open git-ignored files directly unless the user specifically asks for that file. They are often local secrets or decrypted copies (e.g. `*.dec.yml`, `*.yaml.dec`, `terraform.tfvars`, `backend.tf`, `*.key`, `*.pem`).
@@ -25,7 +31,7 @@ Concourse itself is deployed from the `k8s-homelab` repo.
 | `common/tasks/get-bw-secret.yml` | Reusable task: pulls Bitwarden items (`BW_ITEMS="<item_id>:<output_file> ..."`) into `secrets/` using the `flipenergy/bitwarden-cli` image. |
 | `common/scripts/` | `get-bw-item.sh` (used by the task above), `import-secret-key.sh` (imports GPG key, decrypts kubeconfig with sops), `setup-git-config.sh`. |
 | `common/vars/secrets.enc.yml` | sops/PGP-encrypted pipeline vars (`((var))` values). |
-| `common/misc/kube-config.enc.yml` | sops-encrypted kubeconfig used by deploy tasks. |
+| `common/misc/kube-config.enc.yml` | sops-encrypted kubeconfig used by deploy tasks. One context, `homelab`: the Talos cluster's admin kubeconfig (`k8s-homelab/talos`, `make kubeconfig`), with context `admin@homelab` renamed to `homelab`. Pipelines select it with `KUBE_CONTEXT: homelab`, and `deploy-k8s.sh` deploys `${KUBE_CONTEXT}.yaml`, i.e. `k8s-homelab/homelab.yaml`. |
 | `personal-websites/` | `personal-sites` pipeline: Hugo build → OCI image → Docker Hub → `helm upgrade` with bjw-s app-template. |
 | `k8s-homelab/` | `deploy-k8s-homelab` (Helmsman `-apply` on `main`), `k8s-homelab-branch-tracker` (sets one `k8s-homelab-diff` instanced pipeline per non-main branch running `-show-diff`). `common.yml` holds shared anchors; `pipeline-templates/` is compiled inside CI. The helmsman image (`helmsman-image-resource` in `common/reusable-blocks.yml`) is `flipenergy/helmsman`, built by `images-build` from `container-images/helmsman`. It's upstream helmsman plus Helm 4-compatible helm-secrets/helm-diff plugins, because upstream's legacy helm-secrets plugin lacks the `helm secrets` command under Helm 4. Keep its tag in sync with helmsman in `k8s-homelab/mise.toml`, and the plugin versions in its Dockerfile in sync with the `k8s-homelab` Makefile. |
 | `tf-pipeline/` | `terraform` pipeline: weekly (Friday) + on-push `tofu plan` (OpenTofu, `ghcr.io/opentofu/opentofu` image) of `tf-playground/homelab`. Keep the image tag in sync with `tf-playground/homelab/mise.toml`. |
@@ -51,7 +57,7 @@ Consequences:
 - `make login` / `make sync` — fly login / update fly.
 - `make set-all-pipelines` — decrypt secrets, set every pipeline, delete decrypted file.
 - `make <pipeline-name>` — set one pipeline (needs `make decrypt-secrets` first, `make clean-decrypted-files` after).
-- `make save-kube-config` — re-encrypt current kubeconfig into `common/misc/kube-config.enc.yml`.
+- `make save-kube-config` — re-encrypt current kubeconfig into `common/misc/kube-config.enc.yml`. It encrypts the *whole* `~/.kube/config` (`kubectl config view --flatten`), so make sure that only holds the `homelab` context first. Talos admin kubeconfig client certs expire after about a year, so regenerate and re-save before then.
 
 Setting pipelines changes the live CI server — ask before running any `fly set-pipeline` / `make <pipeline>`.
 
@@ -65,6 +71,7 @@ Setting pipelines changes the live CI server — ask before running any `fly set
 
 - Notifications go to Discord via `flavorjones/webhook-notification-resource`; jobs use `<<: *job-notifications` (success + failure) or only failure hooks.
 - Image builds use `concourse/oci-build-task` (`privileged: true`), pushed with `additional_tags` from a version/short_ref file.
+- Workers run on Talos and need Talos-specific settings. If task containers fail to start, check `k8s-homelab/concourse/concourse-values.yaml` and `k8s-homelab/talos/patches/all.yaml` first.
 - Git resources set `ignore_paths` for README/Makefile/renovate.json so doc changes don't trigger deploys.
 - Renovate is enabled (`renovate.json`) — expect automated image tag bumps.
 
