@@ -71,18 +71,15 @@ Setting pipelines changes the live CI server — ask before running any `fly set
 
 - Notifications go to Discord via `flavorjones/webhook-notification-resource`; jobs use `<<: *job-notifications` (success + failure) or only failure hooks.
 - Image builds use `concourse/oci-build-task` (`privileged: true`), pushed with `additional_tags` from a version/short_ref file.
-- Workers run on Talos and need Talos-specific settings. If task containers fail to start, check `k8s-homelab/concourse/concourse-values.yaml` and `k8s-homelab/talos/patches/all.yaml` first.
+- Workers run on Talos and need Talos-specific settings. If task containers fail to start, check `k8s-homelab/concourse/concourse-values.yaml` and `k8s-homelab/talos/patches/all.yaml` first. `unable to apply caps: operation not permitted` on privileged tasks (`oci-build-task`) means the worker's `runc` wrapper (strips CAP_SYS_MODULE/CAP_SYS_BOOT, which Talos blocks) isn't in place.
 - Git resources set `ignore_paths` for README/Makefile/renovate.json so doc changes don't trigger deploys.
 - Renovate is enabled (`renovate.json`) — expect automated image tag bumps.
 
 ## Known issues / in-progress work (as of 2026-11)
 
-`personal-websites/personal-websites.yml` was recently extended for a second site (`claricen/portfolio` → `flipenergy/clare-portfolio`) and is not finished:
-- A stray backtick before `- name: concourse-pipelines-repo` in `deploy-website-to-k8s` breaks the YAML.
-- Task `run.path` is `concourse-pipelines-repo/personal-website/deploy-to-k8s.sh`, but the directory is `personal-websites/`.
-- Clare's Hugo step uses a placeholder `cd TODO_DIR`.
-- `deploy-clare-website-to-k8s` gets `*site-repo` but its task expects `*clare-repo` as input.
-- `personal-websites/deploy-to-k8s.sh` has broken quoting in the `helm upgrade` line (`"${RELEASE_NAME} bjw-s/app-template --version "${APP_TEMPLATE_VERSION}`).
+`personal-websites/personal-websites.yml` was extended for a second site (`claricen/portfolio` → `flipenergy/clare-portfolio`) and Clare's half is not finished (Dennis's site builds and deploys fine):
+- `build-and-push-clare-image`'s Hugo step uses a placeholder `cd TODO_DIR`; the real site directory in Clare's repo is still unknown.
+- `deploy-clare-website-to-k8s` gets `*site-repo` (and `passed: [build-and-push-image]`) but its task expects `*clare-repo` as input.
 
 Other drift:
 - `tf-pipeline` still fetches an `oracle.pem` from Bitwarden. It's still needed: tf-playground's OCI provider (TF state bucket, budget) reads it via `private_key_path`.
